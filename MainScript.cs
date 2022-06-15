@@ -24,13 +24,14 @@ public class MainScript : MonoBehaviour
 	//--------------------------------------------------------------------------------------------------------
 	//GAME START
 	//--------------------------------------------------------------------------------------------------------
-	private bool startFlg;  //スタートフラグ
-	private bool endFlg;    //エンドフラグ
+	private bool startFlg, endFlg;  //スタート　エンド　フラグ
 	public bool escapeFlg = true;   //ステージセレクトバグ回避フラグ
+	private bool hintFlg;
 	public void Start()
 	{
 		csvi.CsvLoad();     //csvをロード
 		loadCsvArray = csvi.loadScoreArray;
+
 		if (Serialize_StageNo >= 1)
 		{
 			escapeFlg = false;
@@ -173,6 +174,7 @@ public class MainScript : MonoBehaviour
 		panelVecter2XY = new float[panelNumY, panelNumX, 2];
 
 		endFlg = true;
+		hintFlg = true;
 
 		ScoreSet();
 		//--------------------------------------------------------------------------------------------------------
@@ -262,13 +264,12 @@ public class MainScript : MonoBehaviour
 			totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
 
 			loadCsvArray = csvi.loadScoreArray;
-			Debug.Log(loadCsvArray);
 			dal.Array1DLog(loadCsvArray);
 
 			loadCsvArray[0] = totalScore;
 			totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
 			totalScoreGUI.text = totalScore.ToString();
-			costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+			costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
 			costScoreGUI.text = totalScore.ToString();
 
 			csvi.CsvSave(loadCsvArray);
@@ -633,25 +634,35 @@ public class MainScript : MonoBehaviour
 		int _hintR = 0;
 		int _hintC = 0;
 		int _iCount = 0;
-		foreach (int i in hintArray)
+
+		if (hintFlg)
 		{
-			_iCount++;
-			if (_iCount % 2 == 0)
+			hintFlg = false;
+			foreach (int i in hintArray)
 			{
-				_hintR = i;
-				string _hintName = "Po_R" + _hintC + "C" + _hintR;
-				GameObject HintObject = GameObject.Find(_hintName);
-				if (HintObject != null)
+				_iCount++;
+				if (_iCount % 2 == 0)
 				{
-					HintObject.GetComponent<SpriteRenderer>().color = new Color(200.0f / 255.0f, 0.0f / 255.0f, 0.0f / 255.0f, 255.0f / 255.0f);
-					CostDown(hintCost);
+					_hintC = i;
+					string _hintName = "Po_R" + _hintR + "C" + _hintC;
+					GameObject HintObject = GameObject.Find(_hintName);
+					if (HintObject != null)
+					{
+						HintObject.GetComponent<SpriteRenderer>().color = new Color(200.0f / 255.0f, 0.0f / 255.0f, 0.0f / 255.0f, 255.0f / 255.0f);
+						CostDown(hintCost);
+					}
+					else
+					{
+						hintFlg = false;
+					}
+				}
+				else
+				{
+					_hintR = i;
 				}
 			}
-			else
-			{
-				_hintC = i;
-			}
 		}
+
 	}
 
 	//--------------------------------------------------------------------------------------------------------
