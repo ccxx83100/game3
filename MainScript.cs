@@ -115,6 +115,9 @@ public class MainScript : MonoBehaviour
 				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
 				totalScoreGUI.text = totalScore.ToString();
 
+				costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+				costScoreGUI.text = totalScore.ToString();
+
 				csvi.CsvSave(loadCsvArray);
 			}
 		}
@@ -265,6 +268,8 @@ public class MainScript : MonoBehaviour
 			loadCsvArray[0] = totalScore;
 			totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
 			totalScoreGUI.text = totalScore.ToString();
+			costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+			costScoreGUI.text = totalScore.ToString();
 
 			csvi.CsvSave(loadCsvArray);
 		}
@@ -275,8 +280,8 @@ public class MainScript : MonoBehaviour
 	//--------------------------------------------------------------------------------------------------------
 	public int bestScore, nowScore, nowScoreView, totalScore;
 	private int onePanelPoint, clearPoint;
-	public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ;
-	public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI;
+	public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ, costScoreOBJ;
+	public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI, costScoreGUI;
 	void ScoreSet()
 	{
 		nowScore = 0;
@@ -287,16 +292,19 @@ public class MainScript : MonoBehaviour
 		bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
 		nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
 		totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
+		costScoreOBJ = GameObject.Find("UICanvas").transform.Find("Score_COST").gameObject;
 
 		bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
 		nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
 		totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+		costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
 
 		totalScore = csvi.loadScoreArray[0];
 		bestScore = csvi.loadScoreArray[Serialize_StageNo];
 		bestScoreGUI.text = bestScore.ToString();
 		nowScoreGUI.text = nowScore.ToString();
 		totalScoreGUI.text = totalScore.ToString();
+		costScoreGUI.text = totalScore.ToString();
 
 	}
 	//--------------------------------------------------------------------------------------------------------
