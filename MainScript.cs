@@ -18,8 +18,6 @@ public class MainScript : MonoBehaviour
 	public int Serialize_StageNo;
 	DebugArrayLog dal = new DebugArrayLog();
 	CSVImporter csvi = new CSVImporter();
-	public int resetCost = 10;
-	public int hintCost = 100;
 
 	//--------------------------------------------------------------------------------------------------------
 	//GAME START
@@ -48,6 +46,29 @@ public class MainScript : MonoBehaviour
 				totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
 				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
 				*/
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	//GUIのセット
+	//--------------------------------------------------------------------------------------------------------
+	public int resetCost = 30;
+	public int hintCost = 200;
+	public GameObject resetCostOBJ, hintCostOBJ;
+	public TextMeshProUGUI resetCostGUI, hintCostGUI;
+	private void GUISetUP()
+	{
+		resetCostOBJ = GameObject.Find("UICanvas").
+		transform.Find("Button_window").gameObject.
+		transform.Find("Cost_Reset").gameObject;
+		resetCostGUI = resetCostOBJ.GetComponent<TextMeshProUGUI>();
+		resetCostGUI.text = resetCost.ToString();
+
+		hintCostOBJ = GameObject.Find("UICanvas").
+		transform.Find("Button_window").gameObject.
+		transform.Find("Cost_Hint").gameObject;
+		hintCostGUI = hintCostOBJ.GetComponent<TextMeshProUGUI>();
+		hintCostGUI.text = hintCost.ToString();
+
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -177,6 +198,7 @@ public class MainScript : MonoBehaviour
 		hintFlg = true;
 
 		ScoreSet();
+		GUISetUP();
 		//--------------------------------------------------------------------------------------------------------
 		//START
 		//--------------------------------------------------------------------------------------------------------
@@ -293,7 +315,7 @@ public class MainScript : MonoBehaviour
 		bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
 		nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
 		totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-		costScoreOBJ = GameObject.Find("UICanvas").transform.Find("Score_COST").gameObject;
+		costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_TOTAL").gameObject;
 
 		bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
 		nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
