@@ -77,7 +77,6 @@ public class StageSelect : MonoBehaviour
 
 			GameObject[] allObjects;
 			allObjects = GameObject.FindGameObjectsWithTag("DestoryObject");
-			Debug.Log(allObjects);
 			foreach (GameObject t in allObjects)
 			{
 				Destroy(t);

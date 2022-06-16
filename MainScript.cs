@@ -18,7 +18,9 @@ public class MainScript : MonoBehaviour
 	public int Serialize_StageNo;
 	DebugArrayLog dal = new DebugArrayLog();
 	CSVImporter csvi = new CSVImporter();
-
+	public int resetCost = 30;
+	public int hintCost = 200;
+	public int[] loadCsvArray;
 	//--------------------------------------------------------------------------------------------------------
 	//GAME START
 	//--------------------------------------------------------------------------------------------------------
@@ -38,37 +40,6 @@ public class MainScript : MonoBehaviour
 			startFlg = false;
 			AnimationStop();
 		}
-		/*
-				bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
-				bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
-				nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
-				nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-				totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-				*/
-	}
-
-	//--------------------------------------------------------------------------------------------------------
-	//GUIのセット
-	//--------------------------------------------------------------------------------------------------------
-	public int resetCost = 30;
-	public int hintCost = 200;
-	public GameObject resetCostOBJ, hintCostOBJ;
-	public TextMeshProUGUI resetCostGUI, hintCostGUI;
-	private void GUISetUP()
-	{
-		resetCostOBJ = GameObject.Find("UICanvas").
-		transform.Find("Button_window").gameObject.
-		transform.Find("Cost_Reset").gameObject;
-		resetCostGUI = resetCostOBJ.GetComponent<TextMeshProUGUI>();
-		resetCostGUI.text = resetCost.ToString();
-
-		hintCostOBJ = GameObject.Find("UICanvas").
-		transform.Find("Button_window").gameObject.
-		transform.Find("Cost_Hint").gameObject;
-		hintCostGUI = hintCostOBJ.GetComponent<TextMeshProUGUI>();
-		hintCostGUI.text = hintCost.ToString();
-
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -107,18 +78,36 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
+
 	//--------------------------------------------------------------------------------------------------------
-	//クリア後の処理
+	//タグ検索+TextMeshProGUI変更 (第1引数:検索タグ名 / 第2引数:変更パラメータ)
 	//--------------------------------------------------------------------------------------------------------
-	public int[] loadCsvArray;
+	private void TagSarchAndChangeText(string _tagName, int _param)
+	{
+		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
+		foreach (GameObject i in _go)
+		{
+			TextMeshProUGUI _tM = i.GetComponent<TextMeshProUGUI>();
+			_tM.text = _param.ToString();
+		}
+	}
+
+
+	/// <summary>
+	/// クリア後の処理
+	/// </summary>
 	void Clear_func()
 	{
 		if (endFlg)
 		{
 			nowScore = nowScore + clearPoint + onePanelPoint;
 			nowScoreView = nowScore;
+			/*
 			nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
 			nowScoreGUI.text = nowScoreView.ToString();
+			*/
+
+			TagSarchAndChangeText("ScoreNow", nowScoreView);
 			endFlg = false;
 
 			if (nowScore > bestScore)
@@ -128,17 +117,34 @@ public class MainScript : MonoBehaviour
 				loadCsvArray[Serialize_StageNo] = nowScore;
 				dal.Array1DLog(loadCsvArray);
 
-				bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
-				bestScoreGUI.text = nowScore.ToString();
+				/*
+								bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
+								bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
+								bestScoreGUI.text = nowScore.ToString();
+								*/
+
+				TagSarchAndChangeText("ScoreBest", nowScore);
+
+
 
 				int _addScore = nowScore - bestScore;
 				totalScore += _addScore;
 				loadCsvArray[0] = totalScore;
-				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-				totalScoreGUI.text = totalScore.ToString();
+				/*	
+							totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
+							totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+							totalScoreGUI.text = totalScore.ToString();
+							*/
 
-				costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-				costScoreGUI.text = totalScore.ToString();
+				TagSarchAndChangeText("ScoreTotal", totalScore);
+
+				/*
+								costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_COST").gameObject;
+								costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+								costScoreGUI.text = totalScore.ToString();
+								*/
+
+				TagSarchAndChangeText("ScoreCost", totalScore);
 
 				csvi.CsvSave(loadCsvArray);
 			}
@@ -198,7 +204,9 @@ public class MainScript : MonoBehaviour
 		hintFlg = true;
 
 		ScoreSet();
-		GUISetUP();
+		//各コスト表示
+		TagSarchAndChangeText("ResetButton", resetCost);
+		TagSarchAndChangeText("HintButton", hintCost);
 		//--------------------------------------------------------------------------------------------------------
 		//START
 		//--------------------------------------------------------------------------------------------------------
@@ -268,31 +276,39 @@ public class MainScript : MonoBehaviour
 
 			GameObject[] ptcObjects;
 			ptcObjects = GameObject.FindGameObjectsWithTag("ParticleObject");
-			foreach (GameObject t in ptcObjects)
+			foreach (GameObject i in ptcObjects)
 			{
-				Destroy(t);
+				Destroy(i);
 			}
-
 			AnimationStop();
-
 		}
 	}
 
+	/// <summary>
+	///総コストを減らす (引数:コストの額)
+	/// </summary>
 	public void CostDown(int _cost)
 	{
 		if (totalScore >= _cost)
 		{
 			totalScore -= _cost;
-			totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
 
 			loadCsvArray = csvi.loadScoreArray;
 			dal.Array1DLog(loadCsvArray);
 
 			loadCsvArray[0] = totalScore;
-			totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-			totalScoreGUI.text = totalScore.ToString();
-			costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
-			costScoreGUI.text = totalScore.ToString();
+
+			/*
+			totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
+						totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+						totalScoreGUI.text = totalScore.ToString();
+						costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
+						costScoreGUI.text = totalScore.ToString();
+						*/
+
+			TagSarchAndChangeText("ScoreTotal", totalScore);
+			TagSarchAndChangeText("ScoreCost", totalScore);
+
 
 			csvi.CsvSave(loadCsvArray);
 		}
@@ -309,30 +325,40 @@ public class MainScript : MonoBehaviour
 	{
 		nowScore = 0;
 		nowScoreView = 0;
-		onePanelPoint = 1;
+		onePanelPoint = 10;
 		clearPoint = 0;
 
-		bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
-		nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
-		totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-		costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_TOTAL").gameObject;
+		/*
+				bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
+				nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
+				totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
+				costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_COST").gameObject;
 
-		bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
-		nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-		totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-		costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
+				bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
+				nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
+				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
+				costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
+				*/
 
 		totalScore = csvi.loadScoreArray[0];
 		bestScore = csvi.loadScoreArray[Serialize_StageNo];
-		bestScoreGUI.text = bestScore.ToString();
-		nowScoreGUI.text = nowScore.ToString();
-		totalScoreGUI.text = totalScore.ToString();
-		costScoreGUI.text = totalScore.ToString();
+
+		/*	bestScoreGUI.text = bestScore.ToString();
+			nowScoreGUI.text = nowScore.ToString();
+			totalScoreGUI.text = totalScore.ToString();
+			costScoreGUI.text = totalScore.ToString();
+			*/
+
+		TagSarchAndChangeText("ScoreBest", bestScore);
+		TagSarchAndChangeText("ScoreNow", nowScore);
+		TagSarchAndChangeText("ScoreTotal", totalScore);
+		TagSarchAndChangeText("ScoreCost", totalScore);
 
 	}
-	//--------------------------------------------------------------------------------------------------------
-	//スコアアップ
-	//--------------------------------------------------------------------------------------------------------
+
+	/// <summary>
+	/// スコアアップ処理 (1フレーム毎にスコアを加算する)
+	/// </summary>
 	void ScoreUP_Fnc()
 	{
 		if (endFlg)
@@ -347,8 +373,13 @@ public class MainScript : MonoBehaviour
 				nowScoreView = nowScore;
 			}
 
-			nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-			nowScoreGUI.text = nowScoreView.ToString();
+			/*
+						nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
+						nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
+						nowScoreGUI.text = nowScoreView.ToString();
+						*/
+
+			TagSarchAndChangeText("ScoreNow", nowScoreView);
 		}
 	}
 
@@ -489,11 +520,13 @@ public class MainScript : MonoBehaviour
 		return returnText;
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//ボールオブジェクトの移動関数
-	//--------------------------------------------------------------------------------------------------------
+
 	private float ballMove = 0.15f; //ボールの移動距離
 	private float ballRotation = 6.0f;  //ボールの回転速度
+
+	/// <summary>
+	/// ボールオブジェクトの移動
+	/// </summary>
 	private void BoMove_Fnc()
 	{
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
@@ -620,9 +653,9 @@ public class MainScript : MonoBehaviour
 		MouseDrag.mouseLRUD = "STOP";
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//オブジェクトの削除関数
-	//--------------------------------------------------------------------------------------------------------
+	/// <summary>
+	/// オブジェクトを削除する (引数1:オブジェクトではなく、オブジェクト名)
+	/// </summary>
 	private void Delete_Fnc(string deleteObjectName)
 	{
 		GameObject DeleteObject = GameObject.Find(deleteObjectName);
@@ -635,9 +668,9 @@ public class MainScript : MonoBehaviour
 		Particle_Fnc(DeleteObject);
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//爆発エフェクト
-	//--------------------------------------------------------------------------------------------------------
+	/// <summary>
+	/// 爆発エフェクト (引数1:爆発させたいインスタンスがある場所を指定)
+	/// </summary>
 	private void Particle_Fnc(GameObject obj)
 	{
 		GameObject _effectGO = obj;
@@ -648,9 +681,9 @@ public class MainScript : MonoBehaviour
 		Pto.name = "ParticleObject";
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//ヒント処理
-	//--------------------------------------------------------------------------------------------------------
+	/// <summary>
+	/// ヒントの表示 ()
+	/// </summary>
 	public void Hint_Fnc()
 	{
 		int _hintR = 0;
