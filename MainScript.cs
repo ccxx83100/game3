@@ -21,12 +21,12 @@ public class MainScript : MonoBehaviour
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
-	//--------------------------------------------------------------------------------------------------------
-	//GAME START
-	//--------------------------------------------------------------------------------------------------------
-	private bool startFlg, endFlg;  //スタート　エンド　フラグ
+	private bool startFlg, endFlg;  //スタート　エンドフラグ
 	public bool escapeFlg = true;   //ステージセレクトバグ回避フラグ
 	private bool hintFlg;
+	//--------------------------------------------------------------------------------------------------------
+	//START
+	//--------------------------------------------------------------------------------------------------------
 	public void Start()
 	{
 		csvi.CsvLoad();     //csvをロード
@@ -79,10 +79,10 @@ public class MainScript : MonoBehaviour
 	}
 
 
-	//--------------------------------------------------------------------------------------------------------
-	//タグ検索+TextMeshProGUI変更 (第1引数:検索タグ名 / 第2引数:変更パラメータ)
-	//--------------------------------------------------------------------------------------------------------
-	private void TagSarchAndChangeText(string _tagName, int _param)
+	/// <summary>
+	/// タグ検索してTextMeshProのテキストを変更
+	/// </summary>
+	private void TagSarchAndChangeText<T>(string _tagName, T _param)
 	{
 		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
 		foreach (GameObject i in _go)
@@ -100,7 +100,7 @@ public class MainScript : MonoBehaviour
 	{
 		if (endFlg)
 		{
-			nowScore = nowScore + clearPoint + onePanelPoint;
+			nowScore = nowScore + onePanelPoint;        //最後のパネルは消さないので1個分のスコア加算
 			nowScoreView = nowScore;
 			/*
 			nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
@@ -110,12 +110,12 @@ public class MainScript : MonoBehaviour
 			TagSarchAndChangeText("ScoreNow", nowScoreView);
 			endFlg = false;
 
+			//ベストスコア更新時のみ
 			if (nowScore > bestScore)
 			{
 				loadCsvArray = csvi.loadScoreArray;
-				Debug.Log(loadCsvArray);
 				loadCsvArray[Serialize_StageNo] = nowScore;
-				dal.Array1DLog(loadCsvArray);
+
 
 				/*
 								bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
@@ -145,7 +145,7 @@ public class MainScript : MonoBehaviour
 								*/
 
 				TagSarchAndChangeText("ScoreCost", totalScore);
-
+				dal.Array1DLog(loadCsvArray);
 				csvi.CsvSave(loadCsvArray);
 			}
 		}
@@ -156,19 +156,19 @@ public class MainScript : MonoBehaviour
 	//--------------------------------------------------------------------------------------------------------
 	private GameObject Bo;
 	private int panelNum, panelNumX, panelNumY;
+
+	/// <summary>
+	/// スタートとリセット処理・共通部と各処理
+	/// </summary>
 	public void StartReset_Fnc(int stgNo)
 	{
-		//--------------------------------------------------------------------------------------------------------
-		//共通
-		//--------------------------------------------------------------------------------------------------------
-
 		float screenX = Screen.width;
 		float screenY = Screen.height;
 		Camera MainCamera = Camera.main;
 		float cameraSize = MainCamera.orthographicSize;
 		float ratio = screenX / screenY;
 
-		//ステージ設定クラス
+		//ステージリストから値を取得
 		StageList stl = new StageList();
 		var (_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(stgNo);
 
@@ -184,8 +184,8 @@ public class MainScript : MonoBehaviour
 		panelNumX = panelArray.GetLength(1);    //パネルの横数
 		panelNumY = panelArray.GetLength(0);    //パネルの縦数
 
-		panelNum = (int)(panelNumX * panelNumY); //パネルの総数(穴抜き)
-		panelOneSize = (panelScale * cameraSize) * 2; //パネルの移動(複製パネルの移動座標)
+		panelNum = (int)(panelNumX * panelNumY);    //パネルの総数(穴抜き)
+		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
 		//スクリーン座標
 		yMin = cameraSize;
@@ -199,7 +199,6 @@ public class MainScript : MonoBehaviour
 		defaultY = (_pSize * panelNumY - _pSize);
 
 		panelVecter2XY = new float[panelNumY, panelNumX, 2];
-
 		endFlg = true;
 		hintFlg = true;
 
@@ -207,11 +206,12 @@ public class MainScript : MonoBehaviour
 		//各コスト表示
 		TagSarchAndChangeText("ResetButton", resetCost);
 		TagSarchAndChangeText("HintButton", hintCost);
-		//--------------------------------------------------------------------------------------------------------
-		//START
-		//--------------------------------------------------------------------------------------------------------
+
 		if (startFlg)
 		{
+			//--------------------------------------------------------------------------------------------------------
+			//START
+			//--------------------------------------------------------------------------------------------------------
 			goArray = new string[panelNumY, panelNumX];
 			//パネル配置
 			PanelSetUP_Fnc();
@@ -230,11 +230,15 @@ public class MainScript : MonoBehaviour
 			//--------------------------------------------------------------------------------------------------------
 			//UIの操作
 			//--------------------------------------------------------------------------------------------------------
-			GameObject DeleteCountObjectUIText = GameObject.Find("UICanvas").transform.Find("DeleteCount").gameObject.transform.Find("DeleteCountText").gameObject; ;
-			pd_UIText = DeleteCountObjectUIText.GetComponent<TextMeshProUGUI>();
+			//GameObject DeleteCountObjectUIText = GameObject.Find("UICanvas").transform.Find("DeleteCount").gameObject.transform.Find("DeleteCountText").gameObject; ;
+			//pd_UIText = DeleteCountObjectUIText.GetComponent<TextMeshProUGUI>();
 			maxDeleteCount = breakCount;
 			nowDeleteCount = maxDeleteCount;
-			pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+			//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+
+			string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+			TagSarchAndChangeText("DeleteCount", _deateCountText);
+
 		}
 		else
 		{
@@ -243,11 +247,13 @@ public class MainScript : MonoBehaviour
 			//--------------------------------------------------------------------------------------------------------
 			Debug.Log("-----RESET-----");
 			nowDeleteCount = maxDeleteCount;
-			pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+			//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+			string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+			TagSarchAndChangeText("DeleteCount", _deateCountText);
 			MouseDrag.mouseLRUD = "STOP";
-			//ボールを止める
-			BoStop_Fnc();
-			//パネルを全部削除
+
+			BoStop_Fnc();   //ボールを止める
+							//パネルを全部削除
 			for (int i = 0; i < panelArray.GetLength(0); i++)
 			{
 				for (int j = 0; j < panelArray.GetLength(1); j++)
@@ -256,7 +262,6 @@ public class MainScript : MonoBehaviour
 					{
 						Delete_Fnc(goArray[i, j]);
 						goArray[i, j] = null;
-
 					}
 				}
 			}
@@ -284,6 +289,7 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
+
 	/// <summary>
 	///総コストを減らす (引数:コストの額)
 	/// </summary>
@@ -309,24 +315,24 @@ public class MainScript : MonoBehaviour
 			TagSarchAndChangeText("ScoreTotal", totalScore);
 			TagSarchAndChangeText("ScoreCost", totalScore);
 
-
 			csvi.CsvSave(loadCsvArray);
 		}
-
 	}
-	//--------------------------------------------------------------------------------------------------------
-	//スコア計算[01]
-	//--------------------------------------------------------------------------------------------------------
+
+
 	public int bestScore, nowScore, nowScoreView, totalScore;
-	private int onePanelPoint, clearPoint;
-	public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ, costScoreOBJ;
-	public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI, costScoreGUI;
+	private int onePanelPoint;
+	//public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ, costScoreOBJ;
+	//public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI, costScoreGUI;
+
+	/// <summary>
+	/// スコア計算と表示
+	/// </summary>
 	void ScoreSet()
 	{
 		nowScore = 0;
 		nowScoreView = 0;
 		onePanelPoint = 10;
-		clearPoint = 0;
 
 		/*
 				bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
@@ -383,14 +389,13 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//クリックして削除
-	//--------------------------------------------------------------------------------------------------------
-	private GameObject[] TargetObjects;
-	private GameObject ConfirmObject;
-	private TextMeshProUGUI pd_UIText;
+
+	//private TextMeshProUGUI pd_UIText;
 	private int maxDeleteCount, nowDeleteCount;
 
+	/// <summary>
+	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
+	/// </summary>
 	void BreakClick_Fnc()
 	{
 		Vector2 mousePos = Input.mousePosition;
@@ -398,10 +403,9 @@ public class MainScript : MonoBehaviour
 
 		if (nowDeleteCount != 0)
 		{
-			float minDistance = panelOneSize * 0.7f;
-
-			TargetObjects = GameObject.FindGameObjectsWithTag("PanelObject");
-			ConfirmObject = null;
+			float minDistance = panelOneSize * 0.7f; //クリックした位置とパネルの距離
+			GameObject[] TargetObjects = GameObject.FindGameObjectsWithTag("PanelObject");
+			GameObject ConfirmObject = null;
 			foreach (GameObject target in TargetObjects)
 			{
 				float _distance = Vector2.Distance(mousePos2D, target.transform.position);
@@ -430,20 +434,22 @@ public class MainScript : MonoBehaviour
 					Debug.Log("Delete? " + notDelX + ":" + notDelY);
 					Delete_Fnc(ConfirmObject.name);
 					nowDeleteCount--;
-					pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-				}
 
+					string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+					TagSarchAndChangeText("DeleteCount", _deateCountText);
+					//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+				}
 			}
 		}
 	}
 
 
-	//--------------------------------------------------------------------------------------------------------
-	//パネル配置
-	//--------------------------------------------------------------------------------------------------------
-	private GameObject Po;
+	/// <summary>
+	/// パネルの配置/インスタンスを生成し座標を配列に入れる
+	/// </summary>
 	private void PanelSetUP_Fnc()
 	{
+		GameObject Po;
 		for (int i = 0; i < panelArray.GetLength(0); i++)
 		{
 			for (int j = 0; j < panelArray.GetLength(1); j++)
@@ -470,12 +476,12 @@ public class MainScript : MonoBehaviour
 				panelVecter2XY[i, j, 1] = panel_yPos;
 			}
 		}
-		//dal.Array2DLog(goArray);
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//RCを数字で取り出す関数
-	//--------------------------------------------------------------------------------------------------------
+
+	/// <summary>
+	/// テキストからRCの数字を取得 (引数1:テキスト 引数2:RかCの1文字)
+	/// </summary>
 	private string substRC_Num(string textBase, string RC)
 	{
 		string textC = "";
@@ -520,15 +526,13 @@ public class MainScript : MonoBehaviour
 		return returnText;
 	}
 
-
-	private float ballMove = 0.15f; //ボールの移動距離
-	private float ballRotation = 6.0f;  //ボールの回転速度
-
 	/// <summary>
-	/// ボールオブジェクトの移動
+	/// [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
 	/// </summary>
 	private void BoMove_Fnc()
 	{
+		float ballMove = 0.15f; //ボールの移動距離
+		float ballRotation = 6.0f;  //ボールの回転速度
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
 		Transform myTransform = Bo.transform;
@@ -540,9 +544,11 @@ public class MainScript : MonoBehaviour
 			float limitMoveY_Half_Up = panelVecter2XY[nowPosition[0], nowPosition[1], 1] + (panelOneSize / 10);
 			float limitMoveY_Half_Down = panelVecter2XY[nowPosition[0], nowPosition[1], 1] - (panelOneSize / 10);
 			string _daleteName = "Po_R" + nowPosition[0] + "C" + nowPosition[1];
+			/*
 			GameObject BraekObject = GameObject.Find(_daleteName);
 			SpriteRenderer _sr = BraekObject.GetComponent<SpriteRenderer>();
 			Color32 col32 = new Color32(150, 150, 150, 255);
+			*/
 
 			switch (md_mouseLRUD)
 			{
@@ -640,18 +646,18 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//ボールオブジェクトの停止関数
-	//--------------------------------------------------------------------------------------------------------
-	private GameObject BackGroundObject;
-	private MouseDrag MouseDragScript;
+
+	/// <summary>
+	/// ボールの停止
+	/// </summary>
 	private void BoStop_Fnc()
 	{
-		BackGroundObject = GameObject.Find("BackGroundCollider");
-		MouseDragScript = BackGroundObject.GetComponent<MouseDrag>();
+		GameObject BackGroundObject = GameObject.Find("BackGroundCollider");   //インスタンスにして処理しないとバグる
+		MouseDrag MouseDragScript = BackGroundObject.GetComponent<MouseDrag>();
 		MouseDragScript.OnMouseDown();
 		MouseDrag.mouseLRUD = "STOP";
 	}
+
 
 	/// <summary>
 	/// オブジェクトを削除する (引数1:オブジェクトではなく、オブジェクト名)
@@ -659,7 +665,6 @@ public class MainScript : MonoBehaviour
 	private void Delete_Fnc(string deleteObjectName)
 	{
 		GameObject DeleteObject = GameObject.Find(deleteObjectName);
-		//Debug.Log("削除:" + DeleteObject);
 		Destroy(DeleteObject);
 		int getC = int.Parse(substRC_Num(DeleteObject.name, "C"));
 		int getR = int.Parse(substRC_Num(DeleteObject.name, "R"));
@@ -667,6 +672,7 @@ public class MainScript : MonoBehaviour
 		goArray[getC, getR] = null;
 		Particle_Fnc(DeleteObject);
 	}
+
 
 	/// <summary>
 	/// 爆発エフェクト (引数1:爆発させたいインスタンスがある場所を指定)
@@ -681,6 +687,7 @@ public class MainScript : MonoBehaviour
 		Pto.name = "ParticleObject";
 	}
 
+
 	/// <summary>
 	/// ヒントの表示 ()
 	/// </summary>
@@ -689,7 +696,6 @@ public class MainScript : MonoBehaviour
 		int _hintR = 0;
 		int _hintC = 0;
 		int _iCount = 0;
-
 		if (hintFlg)
 		{
 			hintFlg = false;
@@ -720,9 +726,10 @@ public class MainScript : MonoBehaviour
 
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//アニメーション停止
-	//--------------------------------------------------------------------------------------------------------
+
+	/// <summary>
+	/// アニメ停止 (速度調整で停止して、0フレーム目に移動)
+	/// </summary>
 	public Animator anim;
 	void AnimationStop()
 	{
@@ -730,9 +737,10 @@ public class MainScript : MonoBehaviour
 		anim.speed = 0;
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//アニメーション再生
-	//--------------------------------------------------------------------------------------------------------
+
+	/// <summary>
+	/// アニメ再生 (速度調整で再生)
+	/// </summary>
 	void AnimationPlay()
 	{
 		anim.speed = 1;

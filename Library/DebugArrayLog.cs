@@ -16,9 +16,9 @@ dal.Array2DLog(**二次元配列**);
 
 public class DebugArrayLog
 {
-	//-------------------------------------------------------------------
-	//配列出力
-	//-------------------------------------------------------------------
+	/// <summary>
+	/// 配列出力 (型指定なし 引数1:array)
+	/// </summary>
 	public void Array1DLog<T>(T[] arr)
 	{
 		string arrayPrint = "(--DebugArrayLog-(1D)--)\n";
@@ -48,14 +48,11 @@ public class DebugArrayLog
 			}
 		}
 		Debug.Log(arrayPrint);
-
-
-
 	}
 
-	//-------------------------------------------------------------------
-	//二次元配列出力
-	//-------------------------------------------------------------------
+	/// <summary>
+	/// 二次元配列出力 (型指定なし 引数1:array)
+	/// </summary>
 	public void Array2DLog<T>(T[,] arr)
 	{
 		string arrayPrint = "(--DebugArrayLog-(2D)--)\n";
@@ -95,9 +92,9 @@ public class DebugArrayLog
 		Debug.Log(arrayPrint);
 	}
 
-	//-------------------------------------------------------------------
-	//三次元配列出力
-	//-------------------------------------------------------------------
+	/// <summary>
+	/// 三次元配列出力 (型指定なし 引数1:array)
+	/// </summary>
 	public void Array3DLog<T>(T[,,] arr)
 	{
 		string arrayPrint = "(--DebugArrayLog-(3D)--)\n";

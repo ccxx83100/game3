@@ -68,6 +68,7 @@ public class Hoge : MonoBehaviour
 
 		int x = failSoftArray[12];                                  //これは配列の範囲外なので0が代入される
 		if (failSoftArray.IsError) Debug.Log("配列の範囲外です");   //これは実行される
+
 	}
 
 	private void aaa()
@@ -75,6 +76,9 @@ public class Hoge : MonoBehaviour
 		FailSoftArray<int> testArray = new FailSoftArray<int>(10);
 
 		testArray[0] = 1;
+
+		DebugArrayLog dal = new DebugArrayLog();
+		//dal.Array1DLog(testArray);
 	}
 
 }
