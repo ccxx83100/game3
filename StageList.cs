@@ -5,10 +5,8 @@ using UnityEngine;
 //ステージファイル
 public class StageList
 {
-	//public int stageNo;
 	private int[] startPos;
-	private int[,] stageArray;
-	private int[,] hintArray;
+	private int[,] stageArray, hintArray;
 	private int breakCount;
 	private float stageScale;
 
@@ -16,9 +14,13 @@ public class StageList
 	//ステージ数を増やしたら増やす
 	//-------------------------------------------------------------------------------------------------------------------------
 	public int switchStage = 10;
+	/// <summary>
+	///	ステージ情報 (引数:ステージ番号)
+	/// </summary>
+	/// <param name="stageNo">ステージ番号</param>
+	/// <returns>ボールの初期位置 int[], ステージ配列 int[,], ヒント配列 int[,], パネルのサイズ float, Break数</returns>
 	public (int[], int[,], int[,], float, int) StageSetUP(int stageNo)
 	{
-
 		switch (stageNo)
 		{
 			//-------------------------------------------------------------------------------------------------------------------------

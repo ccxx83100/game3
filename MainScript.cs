@@ -6,9 +6,9 @@ using TMPro;
 
 public class MainScript : MonoBehaviour
 {
-	public GameObject PanelPrefab, BallPrefab, ParticlePrefab;
+	public GameObject PanelPrefab, BallPrefab, ParticlePrefab;      //プレハブ設定用のGameObject
 	private float panelOneSize, panelScale, xMin, xMax, yMin, yMax;
-	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin;
+	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize;
 	private float[,,] panelVecter2XY;
 	private string[,] goArray;
 	private int[,] panelArray, hintArray;
@@ -16,17 +16,19 @@ public class MainScript : MonoBehaviour
 	private int breakCount;
 	[SerializeField]
 	public int Serialize_StageNo;
-	DebugArrayLog dal = new DebugArrayLog();
-	CSVImporter csvi = new CSVImporter();
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
-	private bool startFlg, endFlg;  //スタート　エンドフラグ
+	public bool startFlg, endFlg;  //スタート　エンドフラグ
 	public bool escapeFlg = true;   //ステージセレクトバグ回避フラグ
 	private bool hintFlg;
-	//--------------------------------------------------------------------------------------------------------
+	DebugArrayLog dal = new DebugArrayLog();    //配列デバッグ用のインスタンス
+	CSVImporter csvi = new CSVImporter();   //CSV読み書き込み用のインスタンス
+	StageList stl = new StageList();    //ステージリストのインスタンス
+
+	//--------------------------------------------------------------------------------
 	//START
-	//--------------------------------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	public void Start()
 	{
 		csvi.CsvLoad();     //csvをロード
@@ -40,12 +42,15 @@ public class MainScript : MonoBehaviour
 			startFlg = false;
 			AnimationStop();
 		}
+
+		testTest(); //後で消す
+
 	}
 
-	//--------------------------------------------------------------------------------------------------------
+
+	//--------------------------------------------------------------------------------
 	//UPDATE
-	//--------------------------------------------------------------------------------------------------------
-	private Vector3 mouseClickPosition;
+	//--------------------------------------------------------------------------------
 	void Update()
 	{
 		if (Bo)
@@ -56,10 +61,9 @@ public class MainScript : MonoBehaviour
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		if (md_mouseLRUD == "STOP")
 		{
-			//クリック取得
 			if (Input.GetMouseButtonDown(0))
 			{
-				mouseClickPosition = Input.mousePosition;
+				Vector3 mouseClickPosition = Input.mousePosition;
 				BreakClick_Fnc();
 			}
 		}
@@ -78,10 +82,11 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// タグ検索してTextMeshProのテキストを変更
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void TagSarchAndChangeText<T>(string _tagName, T _param)
 	{
 		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
@@ -92,10 +97,11 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// クリア後の処理
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	void Clear_func()
 	{
 		if (endFlg)
@@ -151,25 +157,23 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	//--------------------------------------------------------------------------------------------------------
-	//START_RESET
-	//--------------------------------------------------------------------------------------------------------
+
 	private GameObject Bo;
 	private int panelNum, panelNumX, panelNumY;
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// スタートとリセット処理・共通部と各処理
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void StartReset_Fnc(int stgNo)
 	{
 		float screenX = Screen.width;
 		float screenY = Screen.height;
 		Camera MainCamera = Camera.main;
-		float cameraSize = MainCamera.orthographicSize;
 		float ratio = screenX / screenY;
+		cameraSize = MainCamera.orthographicSize;
 
-		//ステージリストから値を取得
-		StageList stl = new StageList();
+		//ステージリストから値を取得		
 		var (_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(stgNo);
 
 		//現在地配列 [] [,]
@@ -289,10 +293,90 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
-	///総コストを減らす (引数:コストの額)
+	/// 修正します 修正します 修正します 修正します 修正します
 	/// </summary>
+	///-------------------------------------------------------------------------------
+	void StartOnly()
+	{
+		goArray = new string[panelNumY, panelNumX];
+		//パネル配置
+		PanelSetUP_Fnc();
+		//ボール配置
+		Vector3 ballPos = new Vector3(0, 0, 0);
+		ballPos.x = defaultX + panelOneSize * nowPosition[1];
+		ballPos.y = defaultY - panelOneSize * nowPosition[0];
+		Bo = Instantiate(BallPrefab, ballPos, Quaternion.identity) as GameObject;
+		Bo.name = "Ball";
+		float ballScale = cameraSize * 2 * panelScale;
+		Vector3 v3_ballScale = new Vector3(ballScale, ballScale, ballScale);
+		Bo.transform.localScale = v3_ballScale;
+		//UIの操作
+		maxDeleteCount = breakCount;
+		nowDeleteCount = maxDeleteCount;
+
+		string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+		TagSarchAndChangeText("DeleteCount", _deateCountText);
+
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// 修正します 修正します 修正します 修正します 修正します
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void ResetOnly()
+	{
+		Debug.Log("-----RESET-----");
+		nowDeleteCount = maxDeleteCount;
+		string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
+		TagSarchAndChangeText("DeleteCount", _deateCountText);
+		MouseDrag.mouseLRUD = "STOP";
+
+		BoStop_Fnc();   //ボールを止める
+
+		//パネルを全部削除
+		for (int i = 0; i < panelArray.GetLength(0); i++)
+		{
+			for (int j = 0; j < panelArray.GetLength(1); j++)
+			{
+				if (goArray[i, j] != null)
+				{
+					Delete_Fnc(goArray[i, j]);
+					goArray[i, j] = null;
+				}
+			}
+		}
+		//変数初期化
+		var (_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(Serialize_StageNo);
+
+		//パネル初期化
+		nowPosition = _startPos;
+		panelArray = _stageArray;
+		PanelSetUP_Fnc();
+
+		//ボール配置
+		Vector3 ballPos = new Vector3(0, 0, 0);
+		ballPos.x = defaultX + panelOneSize * nowPosition[1];
+		ballPos.y = defaultY - panelOneSize * nowPosition[0];
+		Bo.transform.position = ballPos;
+
+		GameObject[] ptcObjects;
+		ptcObjects = GameObject.FindGameObjectsWithTag("ParticleObject");
+		foreach (GameObject i in ptcObjects)
+		{
+			Destroy(i);
+		}
+		AnimationStop();
+	}
+
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// 総コストを減らす (引数:コストの額)
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void CostDown(int _cost)
 	{
 		if (totalScore >= _cost)
@@ -320,14 +404,16 @@ public class MainScript : MonoBehaviour
 	}
 
 
-	public int bestScore, nowScore, nowScoreView, totalScore;
+	private int bestScore, nowScore, nowScoreView, totalScore;
 	private int onePanelPoint;
 	//public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ, costScoreOBJ;
 	//public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI, costScoreGUI;
 
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// スコア計算と表示
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	void ScoreSet()
 	{
 		nowScore = 0;
@@ -362,9 +448,12 @@ public class MainScript : MonoBehaviour
 
 	}
 
+
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// スコアアップ処理 (1フレーム毎にスコアを加算する)
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	void ScoreUP_Fnc()
 	{
 		if (endFlg)
@@ -639,10 +728,8 @@ public class MainScript : MonoBehaviour
 				default:
 					break;
 			}
-			if (Bo)
-			{
-				Bo.transform.position = _pos;
-			}
+			if (Bo) Bo.transform.position = _pos;
+
 		}
 	}
 
@@ -673,10 +760,11 @@ public class MainScript : MonoBehaviour
 		Particle_Fnc(DeleteObject);
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// 爆発エフェクト (引数1:爆発させたいインスタンスがある場所を指定)
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void Particle_Fnc(GameObject obj)
 	{
 		GameObject _effectGO = obj;
@@ -687,10 +775,11 @@ public class MainScript : MonoBehaviour
 		Pto.name = "ParticleObject";
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// ヒントの表示 ()
+	/// ヒント表示
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void Hint_Fnc()
 	{
 		int _hintR = 0;
@@ -723,20 +812,18 @@ public class MainScript : MonoBehaviour
 				}
 			}
 		}
-
 	}
 
-
+	public Animator anim;
 	/// <summary>
 	/// アニメ停止 (速度調整で停止して、0フレーム目に移動)
 	/// </summary>
-	public Animator anim;
+
 	void AnimationStop()
 	{
 		anim.Play("ClearAnimation", 0, 0);
 		anim.speed = 0;
 	}
-
 
 	/// <summary>
 	/// アニメ再生 (速度調整で再生)
@@ -744,6 +831,58 @@ public class MainScript : MonoBehaviour
 	void AnimationPlay()
 	{
 		anim.speed = 1;
+	}
+
+	//---------------------------------------------------------------------------------------------------------------------
+
+	private void testTest()
+	{
+		ScoreClass SC = new ScoreClass();
+		SC.a();
+	}
+
+}
+
+
+
+
+
+//---------------------------------------------------------------------------------
+//
+//---------------------------------------------------------------------------------
+
+
+/// <summary>
+/// まだ作っている途中
+/// </summary>
+public class ScoreClass
+{
+	/// <summary>
+	/// まだ作っている途中
+	/// </summary>
+	public void a()
+	{
+
+		GameObject _gm = GameObject.Find("GameMain");   //インスタンスにして処理しないとバグる
+		MainScript _ms = _gm.GetComponent<MainScript>();
+		bool a = _ms.endFlg;
+
+
+
+	}
+
+}
+
+public class Indexer
+{
+	public string this[string str]
+	{
+		get
+		{
+			/// 本来は何か処理をして返す
+			/// 今回はそのまま引数の文字列を返す
+			return str;
+		}
 	}
 }
 
