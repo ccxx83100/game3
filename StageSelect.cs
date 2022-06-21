@@ -47,6 +47,7 @@ public class StageSelect : MonoBehaviour
 		GameObject _bg = GameObject.Find("BackGroundCollider");
 		Vector3 _bgPos = new Vector3(0, 1, -1);
 		_bg.transform.position = _bgPos;
+
 		GameObject _ga = GameObject.Find("GameMain");
 		MainScript _ms = _ga.GetComponent<MainScript>();
 		bool _flg = _ms.escapeFlg;

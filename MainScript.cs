@@ -8,7 +8,7 @@ public class MainScript : MonoBehaviour
 {
 	public GameObject PanelPrefab, BallPrefab, ParticlePrefab;      //プレハブ設定用のGameObject
 	private float panelOneSize, panelScale;
-	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize;
+	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize, panelSize;
 	private float[,,] panelVecter2XY;
 	private string[,] goArray;
 	private int[,] panelArray, hintArray;
@@ -19,14 +19,12 @@ public class MainScript : MonoBehaviour
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
-	public bool startFlg, endFlg;  //スタート　エンドフラグ
-	public bool escapeFlg = true;   //ステージセレクトバグ回避フラグ
+	public bool startFlg, endFlg;               //スタート　エンドフラグ
+	public bool escapeFlg = true;               //ステージセレクトバグ回避フラグ
 	private bool hintFlg;
 	DebugArrayLog dal = new DebugArrayLog();    //配列デバッグ用のインスタンス
-	CSVImporter csvi = new CSVImporter();   //CSV読み書き込み用のインスタンス
-	StageList stl = new StageList();    //ステージリストのインスタンス
-
-
+	CSVImporter csvi = new CSVImporter();       //CSV読み書き込み用のインスタンス
+	StageList stl = new StageList();            //ステージリストのインスタンス
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -46,13 +44,6 @@ public class MainScript : MonoBehaviour
 			startFlg = false;
 			AnimationStop();
 		}
-
-		//スプライトナンバー処理
-		GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
-		ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
-		GameObject BreakCountObMax = GameObject.Find("BreakCountMax");
-		ImageNo imgNo_Max = BreakCountObMax.GetComponent<ImageNo>();
-
 
 		testTest(); //後で消す
 	}
@@ -74,8 +65,9 @@ public class MainScript : MonoBehaviour
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
-				Vector3 mouseClickPosition = Input.mousePosition;
+				//Vector3 mouseClickPosition = Input.mousePosition;
 				BreakClick_Fnc();
+				BreakClick_Fnc2();
 			}
 		}
 		if (panelArray != null)
@@ -120,19 +112,21 @@ public class MainScript : MonoBehaviour
 		hintArray = _hintArray;
 		breakCount = _breakCount;
 
-		panelScale = _stageScale;   //基本設定変数
-		panelScaleMin = panelScale * 1.0f;  //マージン分を縮小する
+		panelScale = _stageScale;
+		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
 
-		panelNumX = panelArray.GetLength(1);    //パネルの横数
-		panelNumY = panelArray.GetLength(0);    //パネルの縦数
+		panelNumX = panelArray.GetLength(1);            //パネルの横数
+		panelNumY = panelArray.GetLength(0);            //パネルの縦数
 
-		panelNum = (int)(panelNumX * panelNumY);    //パネルの総数(穴抜き)
+		panelNum = (int)(panelNumX * panelNumY);        //パネルの総数(穴抜き)
 		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
 		//パネルセットの初期位置
-		float _pSize = panelScale * cameraSize;
-		defaultX = (_pSize * panelNumX - _pSize) * -1;
-		defaultY = (_pSize * panelNumY - _pSize);
+		panelSize = panelScale * cameraSize;
+		Debug.Log($"_panelSize:{panelSize}");
+
+		defaultX = (panelSize * panelNumX - panelSize) * -1;
+		defaultY = (panelSize * panelNumY - panelSize);
 
 		panelVecter2XY = new float[panelNumY, panelNumX, 2];
 		endFlg = true;
@@ -191,10 +185,6 @@ public class MainScript : MonoBehaviour
 		//UIの操作
 		maxDeleteCount = breakCount;
 		nowDeleteCount = maxDeleteCount;
-
-		string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-		TagSarchAndChangeText("DeleteCount", _deateCountText);
-
 	}
 
 	///-------------------------------------------------------------------------------
@@ -205,9 +195,6 @@ public class MainScript : MonoBehaviour
 	void ResetOnly()
 	{
 		Debug.Log("-----RESET-----");
-		//nowDeleteCount = maxDeleteCount;
-		string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-		TagSarchAndChangeText("DeleteCount", _deateCountText);
 		MouseDrag.mouseLRUD = "STOP";
 
 		BoStop_Fnc();   //ボールを止める
@@ -290,7 +277,7 @@ public class MainScript : MonoBehaviour
 				int _addScore = nowScore - bestScore;
 				totalScore += _addScore;
 				loadCsvArray[0] = totalScore;
-				TagSarchAndChangeText("ScoreTotal", totalScore);
+
 				TagSarchAndChangeText("ScoreCost", totalScore);
 
 				dal.Array1DLog(loadCsvArray);
@@ -312,7 +299,7 @@ public class MainScript : MonoBehaviour
 			loadCsvArray = csvi.loadScoreArray;
 			dal.Array1DLog(loadCsvArray);
 			loadCsvArray[0] = totalScore;
-			TagSarchAndChangeText("ScoreTotal", totalScore);
+
 			TagSarchAndChangeText("ScoreCost", totalScore);
 
 			csvi.CsvSave(loadCsvArray);
@@ -337,7 +324,6 @@ public class MainScript : MonoBehaviour
 
 		TagSarchAndChangeText("ScoreBest", bestScore);
 		TagSarchAndChangeText("ScoreNow", nowScore);
-		TagSarchAndChangeText("ScoreTotal", totalScore);
 		TagSarchAndChangeText("ScoreCost", totalScore);
 	}
 
@@ -406,18 +392,58 @@ public class MainScript : MonoBehaviour
 					Delete_Fnc(ConfirmObject.name);
 					nowDeleteCount--;
 
-					string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-					TagSarchAndChangeText("DeleteCount", _deateCountText);
-
 					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
 					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
 					imgNo_Now.SpriteNumSet(nowDeleteCount);
-
-					//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
 				}
 			}
 		}
 	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	///
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void BreakClick_Fnc2()
+	{
+		Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		//Debug.Log($"x:{mousePos.x}---y:{mousePos.y}");
+		Debug.Log("--------------");
+		bool destroyFlg = false;
+		int _row = 0;
+		int _col = 0;
+		for (int i = 0; i < panelVecter2XY.GetLength(0); i++)
+		{
+			for (int j = 0; j < panelVecter2XY.GetLength(1); j++)
+			{
+				if (mousePos.x >= panelVecter2XY[i, j, 0] - panelSize && mousePos.x < panelVecter2XY[i, j, 0] + panelSize)
+				{
+					if (mousePos.y <= panelVecter2XY[i, j, 1] + panelSize && mousePos.y > panelVecter2XY[i, j, 1] - panelSize)
+					{
+
+						_row = i;
+						_col = j;
+						destroyFlg = true;
+					}
+				}
+			}
+		}
+		if (destroyFlg)
+		{
+			string destroyName = "Po_R" + _row + "C" + _col;
+			Debug.Log(destroyName);
+		}
+
+
+		//Debug.Log($"{row}:{col}");
+		//dal.Array3DLog(panelVecter2XY);
+		//dal.Array3DLog(panelVecter2XY_ok);
+
+
+
+	}
+
 
 	/// <summary>
 	/// パネルの配置/インスタンスを生成し座標を配列に入れる
@@ -453,6 +479,11 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
+	[SerializeField]
+	public float ballMove = 0.15f;      //ボールの移動速度
+	[SerializeField]
+	public float ballRotation = 11.0f;  //ボールの回転速度
+
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
@@ -460,8 +491,6 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	private void BoMove_Fnc()
 	{
-		float ballMove = 0.15f; //ボールの移動距離
-		float ballRotation = 11.0f;  //ボールの回転速度
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
 		Transform myTransform = Bo.transform;
@@ -686,16 +715,76 @@ public class MainScript : MonoBehaviour
 	{
 		ScoreClass SC = new ScoreClass();
 		SC.a();
+
+		IndexerTest IT = new IndexerTest();
+		int a = IT[0];
+		//Debug.Log(IT.GetSetProperty);
+
+		IndexerTest_old ITO = new IndexerTest_old();
+		ITO.SetProperty(100);
+		Debug.Log(ITO.GetProperty());
+
 	}
+}
+
+
+
+//---------------------------------------------------------------------------------
+//C#におけるインデクサーは、あたかも配列であるかのように呼び出せる機能で、
+//あらかじめユーザーが定義したコードを実行させることができます。
+//クラス名などの名前を定義する必要がないため、コーディングに慣れていれば一目でインデクサーだと分かるでしょう。
+//インデクサーの中で定義するgetは要素型のデータを返す必要があり、setでは要素型の引数を受け取ることになります。
+//
+//インデクサーは配列と似ていますが、中身は別物になっています。
+//最大の特徴はアクセスする際の添え字がint型である必要がないことで、
+//対応したデータを入れるようにすれば文字列でも添え字にすることが可能です。
+/// 
+//		// [ ] を使って要素を取得しようとするとgetが呼ばれる
+//		Debug.Log(cls[2]);
+//
+//		// [ ] を使って要素を設定しようとするとsetが呼ばれる
+//		cls[2] = "zzzz";
+//		Debug.Log(cls[2]);
+///
+/// //---------------------------------------------------------------------------------
+
+public class IndexerTest
+{
+	private int _sample;
+
+	public int this[int a]
+	{
+		get
+		{
+			return _sample;
+		}
+		set
+		{
+			_sample = value;
+		}
+	}
+
+}
+
+
+public class IndexerTest_old
+{
+	private int _sample;
+	public int GetProperty()
+	{
+		return _sample;
+	}
+	public void SetProperty(int value)
+	{
+		_sample = value;
+	}
+
 }
 
 
 
 
 
-//---------------------------------------------------------------------------------
-//
-//---------------------------------------------------------------------------------
 
 
 /// <summary>
@@ -718,23 +807,6 @@ public class ScoreClass
 	}
 
 }
-
-public class Indexer
-{
-	public string this[string str]
-	{
-		get
-		{
-			/// 本来は何か処理をして返す
-			/// 今回はそのまま引数の文字列を返す
-			return str;
-		}
-	}
-}
-
-
-
-
 
 
 //--------------------------------------------------------------------------------
