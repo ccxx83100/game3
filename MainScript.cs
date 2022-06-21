@@ -66,17 +66,14 @@ public class MainScript : MonoBehaviour
 			if (Input.GetMouseButtonDown(0))
 			{
 				//Vector3 mouseClickPosition = Input.mousePosition;
-				BreakClick_Fnc();
+				//BreakClick_Fnc();
 				BreakClick_Fnc2();
 			}
 		}
 		if (panelArray != null)
 		{
 			int iCount = 0;
-			foreach (int i in panelArray)
-			{
-				if (i == 1) iCount++;
-			}
+			foreach (int i in panelArray) if (i == 1) iCount++;
 			if (iCount == 1)
 			{
 				AnimationPlay();
@@ -86,6 +83,7 @@ public class MainScript : MonoBehaviour
 	}
 	private GameObject Bo;
 	private int panelNum, panelNumX, panelNumY;
+	private int maxDeleteCount, nowDeleteCount;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -94,6 +92,7 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	public void StartReset_Fnc(int stgNo)
 	{
+		particleCount = 0;
 
 		GameObject NextButton = GameObject.Find("NextButton");
 		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
@@ -349,47 +348,45 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	private int maxDeleteCount, nowDeleteCount;
+	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
+	/// クリックしたパネルを削除
 	/// </summary>
-	void BreakClick_Fnc()
+	///-------------------------------------------------------------------------------
+	void BreakClick_Fnc2()
 	{
-		Vector2 mousePos = Input.mousePosition;
-		Vector2 mousePos2D = Camera.main.ScreenToWorldPoint(mousePos);
-
 		if (nowDeleteCount != 0)
 		{
-			float minDistance = panelOneSize * 0.7f; //クリックした位置とパネルの距離
-			GameObject[] TargetObjects = GameObject.FindGameObjectsWithTag("PanelObject");
-			GameObject ConfirmObject = null;
-			foreach (GameObject target in TargetObjects)
+			Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			bool destroyFlg = false;
+			int _row = -1;
+			int _col = -1;
+			for (int i = 1; i < panelVecter2XY.GetLength(0) - 1; i++)
 			{
-				float _distance = Vector2.Distance(mousePos2D, target.transform.position);
-				//Debug.Log("クリックした位置との距離:" + _distance);
-				//minDistanceとの距離比較
-				if (minDistance > _distance)
+				for (int j = 1; j < panelVecter2XY.GetLength(1) - 1; j++)
 				{
-					//繰り返して近いパネルを検索
-					minDistance = _distance;
-					//一番近いパネルをオブジェクトに格納
-					ConfirmObject = target;
+					if (mousePos.x >= panelVecter2XY[i, j, 0] - panelSize && mousePos.x < panelVecter2XY[i, j, 0] + panelSize)
+					{
+						if (mousePos.y <= panelVecter2XY[i, j, 1] + panelSize && mousePos.y > panelVecter2XY[i, j, 1] - panelSize)
+						{
+							_row = i;
+							_col = j;
+							destroyFlg = true;
+						}
+					}
 				}
 			}
-
-			if (ConfirmObject != null)
+			if (destroyFlg && panelArray[_row, _col] != 0)
 			{
-				int notDelX = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "C"));
-				int notDelY = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "R"));
-
-				if (notDelX == nowPosition[0] && notDelY == nowPosition[1])
+				string destroyName = "Po_R" + _row + "C" + _col;
+				if (_row == nowPosition[0] && _col == nowPosition[1])
 				{
 					//ボールがあるパネルは削除できません
 				}
 				else
 				{
-					Debug.Log("Delete? " + notDelX + ":" + notDelY);
-					Delete_Fnc(ConfirmObject.name);
+					Debug.Log("Delete?? " + _col + ":" + _row);
+					Delete_Fnc(destroyName);
 					nowDeleteCount--;
 
 					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
@@ -402,52 +399,9 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	///
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	void BreakClick_Fnc2()
-	{
-		Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		//Debug.Log($"x:{mousePos.x}---y:{mousePos.y}");
-		Debug.Log("--------------");
-		bool destroyFlg = false;
-		int _row = 0;
-		int _col = 0;
-		for (int i = 0; i < panelVecter2XY.GetLength(0); i++)
-		{
-			for (int j = 0; j < panelVecter2XY.GetLength(1); j++)
-			{
-				if (mousePos.x >= panelVecter2XY[i, j, 0] - panelSize && mousePos.x < panelVecter2XY[i, j, 0] + panelSize)
-				{
-					if (mousePos.y <= panelVecter2XY[i, j, 1] + panelSize && mousePos.y > panelVecter2XY[i, j, 1] - panelSize)
-					{
-
-						_row = i;
-						_col = j;
-						destroyFlg = true;
-					}
-				}
-			}
-		}
-		if (destroyFlg)
-		{
-			string destroyName = "Po_R" + _row + "C" + _col;
-			Debug.Log(destroyName);
-		}
-
-
-		//Debug.Log($"{row}:{col}");
-		//dal.Array3DLog(panelVecter2XY);
-		//dal.Array3DLog(panelVecter2XY_ok);
-
-
-
-	}
-
-
-	/// <summary>
 	/// パネルの配置/インスタンスを生成し座標を配列に入れる
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void PanelSetUP_Fnc()
 	{
 		GameObject Po;
@@ -634,15 +588,33 @@ public class MainScript : MonoBehaviour
 	/// 爆発エフェクト (引数1:爆発させたいインスタンスがある場所を指定)
 	/// </summary>
 	///-------------------------------------------------------------------------------
+	private int particleCount = 0;
 	private void Particle_Fnc(GameObject obj)
 	{
 		GameObject _effectGO = obj;
+		particleCount++;
 		float ptc_Xpos = _effectGO.transform.position.x;
 		float ptc_Ypos = _effectGO.transform.position.y;
 		Vector3 instancePos = new Vector3(ptc_Xpos, ptc_Ypos, -1);
 		GameObject Pto = Instantiate(ParticlePrefab, instancePos, new Quaternion(90f, 0f, 0f, 1.0f)) as GameObject;
-		Pto.name = "ParticleObject";
+		Pto.name = "ParticleObject" + particleCount;
+		StartCoroutine(DestroyPaticle(2.0f, Pto)); //コールチンを使用し遅延処理
 	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// コールチンでパーティクルを再生後に削除
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	IEnumerator DestroyPaticle(float _delay, GameObject _destroyObject)
+	{
+		yield return new WaitForSeconds(_delay);
+		if (_destroyObject != null)
+		{
+			Destroy(_destroyObject);
+		}
+	}
+
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -706,6 +678,57 @@ public class MainScript : MonoBehaviour
 		anim.speed = 1;
 	}
 
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void BreakClick_Fnc()
+	{
+		Vector2 mousePos = Input.mousePosition;
+		Vector2 mousePos2D = Camera.main.ScreenToWorldPoint(mousePos);
+
+		if (nowDeleteCount != 0)
+		{
+			float minDistance = panelOneSize * 0.7f; //クリックした位置とパネルの距離
+			GameObject[] TargetObjects = GameObject.FindGameObjectsWithTag("PanelObject");
+			GameObject ConfirmObject = null;
+			foreach (GameObject target in TargetObjects)
+			{
+				float _distance = Vector2.Distance(mousePos2D, target.transform.position);
+				//Debug.Log("クリックした位置との距離:" + _distance);
+				//minDistanceとの距離比較
+				if (minDistance > _distance)
+				{
+					//繰り返して近いパネルを検索
+					minDistance = _distance;
+					//一番近いパネルをオブジェクトに格納
+					ConfirmObject = target;
+				}
+			}
+
+			if (ConfirmObject != null)
+			{
+				int notDelX = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "C"));
+				int notDelY = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "R"));
+
+				if (notDelX == nowPosition[0] && notDelY == nowPosition[1])
+				{
+					//ボールがあるパネルは削除できません
+				}
+				else
+				{
+					Debug.Log("Delete? " + notDelX + ":" + notDelY);
+					Delete_Fnc(ConfirmObject.name);
+					nowDeleteCount--;
+
+					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
+					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
+					imgNo_Now.SpriteNumSet(nowDeleteCount);
+				}
+			}
+		}
+	}
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// 後で削除

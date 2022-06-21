@@ -246,7 +246,7 @@ public class StageList
 				startPos = new int[] { 1, 1 };
 				stageArray = new int[,]
 				{
-						{1,0,0,0,0,0,0},
+						{0,0,0,0,0,0,0},
 						{0,1,1,1,1,1,0},
 						{0,1,1,1,1,1,0},
 						{0,1,1,1,1,1,0},
