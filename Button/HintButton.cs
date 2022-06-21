@@ -1,20 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
+///-------------------------------------------------------------------------------
+/// <summary>
+/// ヒントボタン
+/// </summary>
+///-------------------------------------------------------------------------------
 public class HintButton : MonoBehaviour
 {
-	CSVImporter csvi = new CSVImporter();
-	GameObject totalScoreOBJ;
-	TextMeshProUGUI totalScoreGUI;
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// ヒントボタンの処理
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void OnClick()
 	{
 		GameObject _ga = GameObject.Find("GameMain");
 		MainScript _ms = _ga.GetComponent<MainScript>();
 		_ms.Hint_Fnc();
-
-
 	}
 }
-

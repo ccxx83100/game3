@@ -7,7 +7,7 @@ using TMPro;
 public class MainScript : MonoBehaviour
 {
 	public GameObject PanelPrefab, BallPrefab, ParticlePrefab;      //プレハブ設定用のGameObject
-	private float panelOneSize, panelScale, xMin, xMax, yMin, yMax;
+	private float panelOneSize, panelScale;
 	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize;
 	private float[,,] panelVecter2XY;
 	private string[,] goArray;
@@ -26,9 +26,13 @@ public class MainScript : MonoBehaviour
 	CSVImporter csvi = new CSVImporter();   //CSV読み書き込み用のインスタンス
 	StageList stl = new StageList();    //ステージリストのインスタンス
 
-	//--------------------------------------------------------------------------------
-	//START
-	//--------------------------------------------------------------------------------
+
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// START
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void Start()
 	{
 		csvi.CsvLoad();     //csvをロード
@@ -43,14 +47,21 @@ public class MainScript : MonoBehaviour
 			AnimationStop();
 		}
 
-		testTest(); //後で消す
+		//スプライトナンバー処理
+		GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
+		ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
+		GameObject BreakCountObMax = GameObject.Find("BreakCountMax");
+		ImageNo imgNo_Max = BreakCountObMax.GetComponent<ImageNo>();
 
+
+		testTest(); //後で消す
 	}
 
-
-	//--------------------------------------------------------------------------------
-	//UPDATE
-	//--------------------------------------------------------------------------------
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// UPDATE
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	void Update()
 	{
 		if (Bo)
@@ -81,85 +92,9 @@ public class MainScript : MonoBehaviour
 			}
 		}
 	}
-
-	///-------------------------------------------------------------------------------
-	/// <summary>
-	/// タグ検索してTextMeshProのテキストを変更
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	private void TagSarchAndChangeText<T>(string _tagName, T _param)
-	{
-		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
-		foreach (GameObject i in _go)
-		{
-			TextMeshProUGUI _tM = i.GetComponent<TextMeshProUGUI>();
-			_tM.text = _param.ToString();
-		}
-	}
-
-	///-------------------------------------------------------------------------------
-	/// <summary>
-	/// クリア後の処理
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	void Clear_func()
-	{
-		if (endFlg)
-		{
-			nowScore = nowScore + onePanelPoint;        //最後のパネルは消さないので1個分のスコア加算
-			nowScoreView = nowScore;
-			/*
-			nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-			nowScoreGUI.text = nowScoreView.ToString();
-			*/
-
-			TagSarchAndChangeText("ScoreNow", nowScoreView);
-			endFlg = false;
-
-			//ベストスコア更新時のみ
-			if (nowScore > bestScore)
-			{
-				loadCsvArray = csvi.loadScoreArray;
-				loadCsvArray[Serialize_StageNo] = nowScore;
-
-
-				/*
-								bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
-								bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
-								bestScoreGUI.text = nowScore.ToString();
-								*/
-
-				TagSarchAndChangeText("ScoreBest", nowScore);
-
-
-
-				int _addScore = nowScore - bestScore;
-				totalScore += _addScore;
-				loadCsvArray[0] = totalScore;
-				/*	
-							totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-							totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-							totalScoreGUI.text = totalScore.ToString();
-							*/
-
-				TagSarchAndChangeText("ScoreTotal", totalScore);
-
-				/*
-								costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_COST").gameObject;
-								costScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-								costScoreGUI.text = totalScore.ToString();
-								*/
-
-				TagSarchAndChangeText("ScoreCost", totalScore);
-				dal.Array1DLog(loadCsvArray);
-				csvi.CsvSave(loadCsvArray);
-			}
-		}
-	}
-
-
 	private GameObject Bo;
 	private int panelNum, panelNumX, panelNumY;
+
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// スタートとリセット処理・共通部と各処理
@@ -167,10 +102,13 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	public void StartReset_Fnc(int stgNo)
 	{
-		float screenX = Screen.width;
-		float screenY = Screen.height;
+
+		GameObject NextButton = GameObject.Find("NextButton");
+		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
+
+		custumLib.ScreenData();
+
 		Camera MainCamera = Camera.main;
-		float ratio = screenX / screenY;
 		cameraSize = MainCamera.orthographicSize;
 
 		//ステージリストから値を取得		
@@ -191,12 +129,6 @@ public class MainScript : MonoBehaviour
 		panelNum = (int)(panelNumX * panelNumY);    //パネルの総数(穴抜き)
 		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
-		//スクリーン座標
-		yMin = cameraSize;
-		yMax = yMin * -1f;
-		xMin = yMin * ratio * -1f;
-		xMax = xMin * -1f;
-
 		//パネルセットの初期位置
 		float _pSize = panelScale * cameraSize;
 		defaultX = (_pSize * panelNumX - _pSize) * -1;
@@ -211,91 +143,30 @@ public class MainScript : MonoBehaviour
 		TagSarchAndChangeText("ResetButton", resetCost);
 		TagSarchAndChangeText("HintButton", hintCost);
 
+		maxDeleteCount = breakCount;
+		nowDeleteCount = maxDeleteCount;
+
+		//スプライトナンバー処理
+		GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
+		ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
+		GameObject BreakCountObMax = GameObject.Find("BreakCountMax");
+		ImageNo imgNo_Max = BreakCountObMax.GetComponent<ImageNo>();
+		imgNo_Now.SpriteNumSet(nowDeleteCount);
+		imgNo_Max.SpriteNumSet(maxDeleteCount);
+
 		if (startFlg)
 		{
-			//--------------------------------------------------------------------------------------------------------
-			//START
-			//--------------------------------------------------------------------------------------------------------
-			goArray = new string[panelNumY, panelNumX];
-			//パネル配置
-			PanelSetUP_Fnc();
-			//--------------------------------------------------------------------------------------------------------
-			//ボール配置
-			//--------------------------------------------------------------------------------------------------------
-			//ボールプレハブを指定位置に生成
-			Vector3 ballPos = new Vector3(0, 0, 0);
-			ballPos.x = defaultX + panelOneSize * nowPosition[1];
-			ballPos.y = defaultY - panelOneSize * nowPosition[0];
-			Bo = Instantiate(BallPrefab, ballPos, Quaternion.identity) as GameObject;
-			Bo.name = "Ball";
-			float ballScale = cameraSize * 2 * panelScale;
-			Vector3 v3_ballScale = new Vector3(ballScale, ballScale, ballScale);
-			Bo.transform.localScale = v3_ballScale;
-			//--------------------------------------------------------------------------------------------------------
-			//UIの操作
-			//--------------------------------------------------------------------------------------------------------
-			//GameObject DeleteCountObjectUIText = GameObject.Find("UICanvas").transform.Find("DeleteCount").gameObject.transform.Find("DeleteCountText").gameObject; ;
-			//pd_UIText = DeleteCountObjectUIText.GetComponent<TextMeshProUGUI>();
-			maxDeleteCount = breakCount;
-			nowDeleteCount = maxDeleteCount;
-			//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-
-			string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-			TagSarchAndChangeText("DeleteCount", _deateCountText);
-
+			StartOnly();
 		}
 		else
 		{
-			//--------------------------------------------------------------------------------------------------------
-			//RESET
-			//--------------------------------------------------------------------------------------------------------
-			Debug.Log("-----RESET-----");
-			nowDeleteCount = maxDeleteCount;
-			//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-			string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
-			TagSarchAndChangeText("DeleteCount", _deateCountText);
-			MouseDrag.mouseLRUD = "STOP";
-
-			BoStop_Fnc();   //ボールを止める
-							//パネルを全部削除
-			for (int i = 0; i < panelArray.GetLength(0); i++)
-			{
-				for (int j = 0; j < panelArray.GetLength(1); j++)
-				{
-					if (goArray[i, j] != null)
-					{
-						Delete_Fnc(goArray[i, j]);
-						goArray[i, j] = null;
-					}
-				}
-			}
-			//変数初期化
-			(_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(stgNo);
-
-			//パネル初期化関数
-			nowPosition = _startPos;
-			panelArray = _stageArray;
-			PanelSetUP_Fnc();
-
-			//ボール配置
-			Vector3 ballPos = new Vector3(0, 0, 0);
-			ballPos.x = defaultX + panelOneSize * nowPosition[1];
-			ballPos.y = defaultY - panelOneSize * nowPosition[0];
-			Bo.transform.position = ballPos;
-
-			GameObject[] ptcObjects;
-			ptcObjects = GameObject.FindGameObjectsWithTag("ParticleObject");
-			foreach (GameObject i in ptcObjects)
-			{
-				Destroy(i);
-			}
-			AnimationStop();
+			ResetOnly();
 		}
 	}
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// 修正します 修正します 修正します 修正します 修正します
+	/// スタート時のみ実行
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	void StartOnly()
@@ -308,6 +179,11 @@ public class MainScript : MonoBehaviour
 		ballPos.x = defaultX + panelOneSize * nowPosition[1];
 		ballPos.y = defaultY - panelOneSize * nowPosition[0];
 		Bo = Instantiate(BallPrefab, ballPos, Quaternion.identity) as GameObject;
+		float _ranX = Random.Range(0.0f, 360.0f);
+		float _ranY = Random.Range(0.0f, 360.0f);
+		float _ranZ = Random.Range(0.0f, 360.0f);
+		Quaternion rotQ = Quaternion.Euler(_ranX, _ranY, _ranZ);
+		Bo.transform.rotation = rotQ;
 		Bo.name = "Ball";
 		float ballScale = cameraSize * 2 * panelScale;
 		Vector3 v3_ballScale = new Vector3(ballScale, ballScale, ballScale);
@@ -323,13 +199,13 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// 修正します 修正します 修正します 修正します 修正します
+	/// リセットボタン押した時のみ実行
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	void ResetOnly()
 	{
 		Debug.Log("-----RESET-----");
-		nowDeleteCount = maxDeleteCount;
+		//nowDeleteCount = maxDeleteCount;
 		string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
 		TagSarchAndChangeText("DeleteCount", _deateCountText);
 		MouseDrag.mouseLRUD = "STOP";
@@ -371,6 +247,57 @@ public class MainScript : MonoBehaviour
 		AnimationStop();
 	}
 
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// タグ検索してTextMeshProのテキストを変更
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	private void TagSarchAndChangeText<T>(string _tagName, T _param)
+	{
+		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
+		foreach (GameObject i in _go)
+		{
+			TextMeshProUGUI _tM = i.GetComponent<TextMeshProUGUI>();
+			_tM.text = _param.ToString();
+		}
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// クリア後の処理
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void Clear_func()
+	{
+		if (endFlg)
+		{
+			nowScore = nowScore + onePanelPoint;        //最後のパネルは消さないので1個分のスコア加算
+			nowScoreView = nowScore;
+
+			TagSarchAndChangeText("ScoreNow", nowScoreView);
+			endFlg = false;
+
+			GameObject NextButton = GameObject.Find("NextButton");
+			NextButton.transform.position = new Vector3(0.0f, -3.4f, 0f);
+
+			//ベストスコア更新時のみ
+			if (nowScore > bestScore)
+			{
+				loadCsvArray = csvi.loadScoreArray;
+				loadCsvArray[Serialize_StageNo] = nowScore;
+				TagSarchAndChangeText("ScoreBest", nowScore);
+
+				int _addScore = nowScore - bestScore;
+				totalScore += _addScore;
+				loadCsvArray[0] = totalScore;
+				TagSarchAndChangeText("ScoreTotal", totalScore);
+				TagSarchAndChangeText("ScoreCost", totalScore);
+
+				dal.Array1DLog(loadCsvArray);
+				csvi.CsvSave(loadCsvArray);
+			}
+		}
+	}
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -382,20 +309,9 @@ public class MainScript : MonoBehaviour
 		if (totalScore >= _cost)
 		{
 			totalScore -= _cost;
-
 			loadCsvArray = csvi.loadScoreArray;
 			dal.Array1DLog(loadCsvArray);
-
 			loadCsvArray[0] = totalScore;
-
-			/*
-			totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-						totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-						totalScoreGUI.text = totalScore.ToString();
-						costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
-						costScoreGUI.text = totalScore.ToString();
-						*/
-
 			TagSarchAndChangeText("ScoreTotal", totalScore);
 			TagSarchAndChangeText("ScoreCost", totalScore);
 
@@ -403,12 +319,8 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-
 	private int bestScore, nowScore, nowScoreView, totalScore;
 	private int onePanelPoint;
-	//public GameObject bestScoreOBJ, nowScoreOBJ, totalScoreOBJ, costScoreOBJ;
-	//public TextMeshProUGUI nowScoreGUI, bestScoreGUI, totalScoreGUI, costScoreGUI;
-
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// スコア計算と表示
@@ -420,34 +332,14 @@ public class MainScript : MonoBehaviour
 		nowScoreView = 0;
 		onePanelPoint = 10;
 
-		/*
-				bestScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_BEST").gameObject;
-				nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
-				totalScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_TOTAL").gameObject;
-				costScoreOBJ = GameObject.Find("UICanvas").gameObject.transform.Find("Button_window").gameObject.transform.Find("Score_COST").gameObject;
-
-				bestScoreGUI = bestScoreOBJ.GetComponent<TextMeshProUGUI>();
-				nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-				totalScoreGUI = totalScoreOBJ.GetComponent<TextMeshProUGUI>();
-				costScoreGUI = costScoreOBJ.GetComponent<TextMeshProUGUI>();
-				*/
-
 		totalScore = csvi.loadScoreArray[0];
 		bestScore = csvi.loadScoreArray[Serialize_StageNo];
-
-		/*	bestScoreGUI.text = bestScore.ToString();
-			nowScoreGUI.text = nowScore.ToString();
-			totalScoreGUI.text = totalScore.ToString();
-			costScoreGUI.text = totalScore.ToString();
-			*/
 
 		TagSarchAndChangeText("ScoreBest", bestScore);
 		TagSarchAndChangeText("ScoreNow", nowScore);
 		TagSarchAndChangeText("ScoreTotal", totalScore);
 		TagSarchAndChangeText("ScoreCost", totalScore);
-
 	}
-
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -458,7 +350,7 @@ public class MainScript : MonoBehaviour
 	{
 		if (endFlg)
 		{
-			int oneFrameScore = 1;
+			int oneFrameScore = 2;
 			if (nowScoreView < nowScore)
 			{
 				nowScoreView += oneFrameScore;
@@ -467,21 +359,11 @@ public class MainScript : MonoBehaviour
 			{
 				nowScoreView = nowScore;
 			}
-
-			/*
-						nowScoreOBJ = GameObject.Find("UICanvas").transform.Find("ScoreUI").gameObject.transform.Find("Score_NOW").gameObject;
-						nowScoreGUI = nowScoreOBJ.GetComponent<TextMeshProUGUI>();
-						nowScoreGUI.text = nowScoreView.ToString();
-						*/
-
 			TagSarchAndChangeText("ScoreNow", nowScoreView);
 		}
 	}
 
-
-	//private TextMeshProUGUI pd_UIText;
 	private int maxDeleteCount, nowDeleteCount;
-
 	/// <summary>
 	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
 	/// </summary>
@@ -511,8 +393,8 @@ public class MainScript : MonoBehaviour
 
 			if (ConfirmObject != null)
 			{
-				int notDelX = int.Parse(substRC_Num(ConfirmObject.name, "C"));
-				int notDelY = int.Parse(substRC_Num(ConfirmObject.name, "R"));
+				int notDelX = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "C"));
+				int notDelY = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "R"));
 
 				if (notDelX == nowPosition[0] && notDelY == nowPosition[1])
 				{
@@ -526,12 +408,16 @@ public class MainScript : MonoBehaviour
 
 					string _deateCountText = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
 					TagSarchAndChangeText("DeleteCount", _deateCountText);
+
+					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
+					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
+					imgNo_Now.SpriteNumSet(nowDeleteCount);
+
 					//pd_UIText.text = "Break!!  " + nowDeleteCount + " / " + maxDeleteCount;
 				}
 			}
 		}
 	}
-
 
 	/// <summary>
 	/// パネルの配置/インスタンスを生成し座標を配列に入れる
@@ -567,61 +453,15 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-
-	/// <summary>
-	/// テキストからRCの数字を取得 (引数1:テキスト 引数2:RかCの1文字)
-	/// </summary>
-	private string substRC_Num(string textBase, string RC)
-	{
-		string textC = "";
-		string textR = "";
-		for (int i = 0; i < textBase.Length; i++)
-		{
-			if (textBase.Substring(i, 1) == "R")
-			{
-				for (int j = i; j < textBase.Length; j++)
-				{
-					if (textBase.Substring(j, 1) == "C")
-					{
-						break;
-					}
-					else if (
-						Regex.IsMatch(textBase.Substring(j, 1), @"^[0-9]+$")
-					)
-					{
-						textC += textBase.Substring(j, 1);
-					}
-				}
-			}
-			if (textBase.Substring(i, 1) == "C")
-			{
-				for (int j = i; j < textBase.Length; j++)
-					if (Regex.IsMatch(textBase.Substring(j, 1), @"^[0-9]+$"))
-					{
-						textR += textBase.Substring(j, 1);
-					}
-			}
-		}
-
-		string returnText = "null";
-		if (RC == "R")
-		{
-			returnText = textR;
-		}
-		else if (RC == "C")
-		{
-			returnText = textC;
-		}
-		return returnText;
-	}
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void BoMove_Fnc()
 	{
 		float ballMove = 0.15f; //ボールの移動距離
-		float ballRotation = 6.0f;  //ボールの回転速度
+		float ballRotation = 11.0f;  //ボールの回転速度
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
 		Transform myTransform = Bo.transform;
@@ -633,11 +473,6 @@ public class MainScript : MonoBehaviour
 			float limitMoveY_Half_Up = panelVecter2XY[nowPosition[0], nowPosition[1], 1] + (panelOneSize / 10);
 			float limitMoveY_Half_Down = panelVecter2XY[nowPosition[0], nowPosition[1], 1] - (panelOneSize / 10);
 			string _daleteName = "Po_R" + nowPosition[0] + "C" + nowPosition[1];
-			/*
-			GameObject BraekObject = GameObject.Find(_daleteName);
-			SpriteRenderer _sr = BraekObject.GetComponent<SpriteRenderer>();
-			Color32 col32 = new Color32(150, 150, 150, 255);
-			*/
 
 			switch (md_mouseLRUD)
 			{
@@ -729,14 +564,14 @@ public class MainScript : MonoBehaviour
 					break;
 			}
 			if (Bo) Bo.transform.position = _pos;
-
 		}
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// ボールの停止
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void BoStop_Fnc()
 	{
 		GameObject BackGroundObject = GameObject.Find("BackGroundCollider");   //インスタンスにして処理しないとバグる
@@ -745,18 +580,23 @@ public class MainScript : MonoBehaviour
 		MouseDrag.mouseLRUD = "STOP";
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// オブジェクトを削除する (引数1:オブジェクトではなく、オブジェクト名)
+	/// 削除してパーティクルを実行    
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void Delete_Fnc(string deleteObjectName)
 	{
 		GameObject DeleteObject = GameObject.Find(deleteObjectName);
 		Destroy(DeleteObject);
-		int getC = int.Parse(substRC_Num(DeleteObject.name, "C"));
-		int getR = int.Parse(substRC_Num(DeleteObject.name, "R"));
+
+		//配列から削除
+		int getC = int.Parse(custumLib.substRC_Num(DeleteObject.name, "C"));
+		int getR = int.Parse(custumLib.substRC_Num(DeleteObject.name, "R"));
 		panelArray[getC, getR] = 0;
 		goArray[getC, getR] = null;
+
 		Particle_Fnc(DeleteObject);
 	}
 
@@ -814,33 +654,39 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
+	///-------------------------------------------------------------------------------
 	public Animator anim;
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// アニメ停止 (速度調整で停止して、0フレーム目に移動)
 	/// </summary>
-
+	///-------------------------------------------------------------------------------
 	void AnimationStop()
 	{
 		anim.Play("ClearAnimation", 0, 0);
 		anim.speed = 0;
 	}
 
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// アニメ再生 (速度調整で再生)
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	void AnimationPlay()
 	{
 		anim.speed = 1;
 	}
 
-	//---------------------------------------------------------------------------------------------------------------------
-
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// 後で削除
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	private void testTest()
 	{
 		ScoreClass SC = new ScoreClass();
 		SC.a();
 	}
-
 }
 
 
@@ -883,6 +729,94 @@ public class Indexer
 			/// 今回はそのまま引数の文字列を返す
 			return str;
 		}
+	}
+}
+
+
+
+
+
+
+//--------------------------------------------------------------------------------
+//あとで分離するかもしれない
+//--------------------------------------------------------------------------------
+
+
+/// <summary>
+/// ライブラリーセット　別のプロジェクトでも使うかもしれない
+/// </summary>
+public class custumLib
+{
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// テキストからRCの数字を取得 (引数1:テキスト 引数2:RかCの1文字)
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public static string substRC_Num(string textBase, string RC)
+	{
+		string textC = "";
+		string textR = "";
+		for (int i = 0; i < textBase.Length; i++)
+		{
+			if (textBase.Substring(i, 1) == "R")
+			{
+				for (int j = i; j < textBase.Length; j++)
+				{
+					if (textBase.Substring(j, 1) == "C")
+					{
+						break;
+					}
+					else if (
+						Regex.IsMatch(textBase.Substring(j, 1), @"^[0-9]+$")
+					)
+					{
+						textC += textBase.Substring(j, 1);
+					}
+				}
+			}
+			if (textBase.Substring(i, 1) == "C")
+			{
+				for (int j = i; j < textBase.Length; j++)
+					if (Regex.IsMatch(textBase.Substring(j, 1), @"^[0-9]+$"))
+					{
+						textR += textBase.Substring(j, 1);
+					}
+			}
+		}
+
+		string returnText = "null";
+		if (RC == "R")
+		{
+			returnText = textR;
+		}
+		else if (RC == "C")
+		{
+			returnText = textC;
+		}
+		return returnText;
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// スクリーンデータを取得
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public static void ScreenData()
+	{
+		Camera MainCamera = Camera.main;
+		float cameraSize = MainCamera.orthographicSize;
+
+		float screenX = Screen.width;
+		float screenY = Screen.height;
+		float ratio = screenX / screenY;
+
+		//スクリーン座標
+		float yMin = cameraSize;
+		float yMax = yMin * -1f;
+		float xMin = yMin * ratio * -1f;
+		float xMax = xMin * -1f;
+
+		Debug.Log($"X({xMin})({xMax}) Y({yMin})({yMin})");
 	}
 }
 

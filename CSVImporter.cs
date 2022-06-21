@@ -4,18 +4,21 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 
+///-------------------------------------------------------------------------------
 /// <summary>
 /// CSVの読み書き
 /// </summary>
+///-------------------------------------------------------------------------------
 public class CSVImporter
 {
 	public int[] loadScoreArray;
 	string saveTxt;
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// CSVを保存 (引数:int 配列　※多次元不可能)
 	/// パスはWindowsのみ確認
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void CsvSave(int[] arr)
 	{
 		string csvPath = Application.persistentDataPath + "/save_data.csv";
@@ -34,10 +37,11 @@ public class CSVImporter
 		File.WriteAllText(csvPath, saveTxt);
 	}
 
-
+	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// CSVの読み込み　ファイルがない場合は作成
 	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void CsvLoad()
 	{
 		string csvPath = Application.persistentDataPath + "/save_data.csv";

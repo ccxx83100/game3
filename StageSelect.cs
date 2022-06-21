@@ -5,19 +5,16 @@ using UnityEngine.UI;
 
 public class StageSelect : MonoBehaviour
 {
-
-	List<string> stageList;
-	private int stageMax;
-	private int _msStageNo;
-
-	//-------------------------------------------------------------------
-	//ドロップダウンリスト生成
-	//-------------------------------------------------------------------
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// ドロップダウンリスト生成
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	void Start()
 	{
 		StageList stl = new StageList();
-		stageMax = stl.switchStage;
-		stageList = new List<string>();
+		int stageMax = stl.switchStage;
+		List<string> stageList = new List<string>();
 		for (int i = 1; i <= stageMax; i++)
 		{
 			stageList.Add("Stage " + i);
@@ -34,16 +31,16 @@ public class StageSelect : MonoBehaviour
 
 		GameObject _ga = GameObject.Find("GameMain");
 		MainScript _ms = _ga.GetComponent<MainScript>();
-		_msStageNo = _ms.Serialize_StageNo - 1;
+		int _msStageNo = _ms.Serialize_StageNo - 1;
 		dropDown.captionText.text = $"Stage {_ms.Serialize_StageNo}";
-
 		dropDown.value = _msStageNo;
-
 	}
 
-	//-------------------------------------------------------------------
-	//ドロップダウン更新後処理
-	//-------------------------------------------------------------------
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// ドロップダウン更新後処理
+	/// </summary>
+	///-------------------------------------------------------------------------------
 	public void OnValueChanged(int value)
 	{
 
