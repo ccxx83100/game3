@@ -16,6 +16,8 @@ public class MainScript : MonoBehaviour
 	private int breakCount;
 	[SerializeField]
 	public int Serialize_StageNo;
+	[SerializeField]
+	public int onePanelPoint = 10;
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
@@ -25,6 +27,10 @@ public class MainScript : MonoBehaviour
 	DebugArrayLog dal = new DebugArrayLog();    //配列デバッグ用のインスタンス
 	CSVImporter csvi = new CSVImporter();       //CSV読み書き込み用のインスタンス
 	StageList stl = new StageList();            //ステージリストのインスタンス
+	public int bestScore, nowScore, nowScoreView, totalScore;
+
+	[SerializeField]
+	public Camera mainCamera;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -97,13 +103,15 @@ public class MainScript : MonoBehaviour
 		GameObject NextButton = GameObject.Find("NextButton");
 		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
 
-		custumLib.ScreenData();
 
 		Camera MainCamera = Camera.main;
 		cameraSize = MainCamera.orthographicSize;
 
+		custumLib.ScreenData();
+
+
 		//ステージリストから値を取得		
-		var (_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(stgNo);
+		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(stgNo);
 
 		//現在地配列 [] [,]
 		nowPosition = _startPos;
@@ -111,18 +119,25 @@ public class MainScript : MonoBehaviour
 		hintArray = _hintArray;
 		breakCount = _breakCount;
 
-		panelScale = _stageScale;
-		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
-
 		panelNumX = panelArray.GetLength(1);            //パネルの横数
 		panelNumY = panelArray.GetLength(0);            //パネルの縦数
+
+		if (panelNumX >= panelNumY)
+		{
+			panelScale = 0.50f / 1.125f / (panelNumX - 2);
+		}
+		else
+		{
+			panelScale = 0.50f / 1.125f / (panelNumY - 2);
+		}
+
+		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
 
 		panelNum = (int)(panelNumX * panelNumY);        //パネルの総数(穴抜き)
 		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
 		//パネルセットの初期位置
 		panelSize = panelScale * cameraSize;
-		Debug.Log($"_panelSize:{panelSize}");
 
 		defaultX = (panelSize * panelNumX - panelSize) * -1;
 		defaultY = (panelSize * panelNumY - panelSize);
@@ -211,7 +226,7 @@ public class MainScript : MonoBehaviour
 			}
 		}
 		//変数初期化
-		var (_startPos, _stageArray, _hintArray, _stageScale, _breakCount) = stl.StageSetUP(Serialize_StageNo);
+		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(Serialize_StageNo);
 
 		//パネル初期化
 		nowPosition = _startPos;
@@ -238,7 +253,7 @@ public class MainScript : MonoBehaviour
 	/// タグ検索してTextMeshProのテキストを変更
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	private void TagSarchAndChangeText<T>(string _tagName, T _param)
+	public void TagSarchAndChangeText<T>(string _tagName, T _param)
 	{
 		GameObject[] _go = GameObject.FindGameObjectsWithTag(_tagName);
 		foreach (GameObject i in _go)
@@ -250,7 +265,7 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// クリア後の処理
+	/// [!スコア更新] クリア後の処理
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	void Clear_func()
@@ -287,7 +302,7 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// 総コストを減らす (引数:コストの額)
+	/// [!スコア更新] 総コストを減らす (引数:コストの額)
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	public void CostDown(int _cost)
@@ -305,18 +320,16 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	private int bestScore, nowScore, nowScoreView, totalScore;
-	private int onePanelPoint;
+
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// スコア計算と表示
+	/// [!スコア更新] スコア計算と表示
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	void ScoreSet()
 	{
 		nowScore = 0;
 		nowScoreView = 0;
-		onePanelPoint = 10;
 
 		totalScore = csvi.loadScoreArray[0];
 		bestScore = csvi.loadScoreArray[Serialize_StageNo];
@@ -328,7 +341,7 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// スコアアップ処理 (1フレーム毎にスコアを加算する)
+	/// [!スコア更新] スコアアップ処理 (1フレーム毎にスコアを加算する)
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	void ScoreUP_Fnc()
@@ -393,6 +406,7 @@ public class MainScript : MonoBehaviour
 					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
 					imgNo_Now.SpriteNumSet(nowDeleteCount);
 				}
+
 			}
 		}
 	}
@@ -440,7 +454,7 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
+	/// [!スコア更新] [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	private void BoMove_Fnc()
@@ -656,7 +670,7 @@ public class MainScript : MonoBehaviour
 	}
 
 	///-------------------------------------------------------------------------------
-	public Animator anim;
+	public Animator clearAnim;
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// アニメ停止 (速度調整で停止して、0フレーム目に移動)
@@ -664,8 +678,8 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	void AnimationStop()
 	{
-		anim.Play("ClearAnimation", 0, 0);
-		anim.speed = 0;
+		clearAnim.Play("ClearAnimation", 0, 0);
+		clearAnim.speed = 0;
 	}
 
 	///-------------------------------------------------------------------------------
@@ -675,7 +689,7 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	void AnimationPlay()
 	{
-		anim.speed = 1;
+		clearAnim.speed = 1;
 	}
 
 	///-------------------------------------------------------------------------------
@@ -737,7 +751,7 @@ public class MainScript : MonoBehaviour
 	private void testTest()
 	{
 		ScoreClass SC = new ScoreClass();
-		SC.a();
+
 
 		IndexerTest IT = new IndexerTest();
 		int a = IT[0];
@@ -745,7 +759,10 @@ public class MainScript : MonoBehaviour
 
 		IndexerTest_old ITO = new IndexerTest_old();
 		ITO.SetProperty(100);
-		Debug.Log(ITO.GetProperty());
+
+		TryCatch TC = new TryCatch();
+		TC.TryC();
+
 
 	}
 }
@@ -804,8 +821,31 @@ public class IndexerTest_old
 
 }
 
+///-------------------------------------------------------------------------------
+/// <summary>
+/// try catch
+/// </summary>
+///-------------------------------------------------------------------------------
 
+public class TryCatch
+{
 
+	int waru = 0;
+	public void TryC()
+	{
+		Debug.Log("tryc");
+
+		try
+		{
+			int _a = 3 / waru;
+			Debug.Log(_a);
+		}
+		catch
+		{
+			Debug.Log("hogehoge");
+		}
+	}
+}
 
 
 
@@ -818,17 +858,25 @@ public class ScoreClass
 	/// <summary>
 	/// まだ作っている途中
 	/// </summary>
-	public void a()
+	public void ScoreSet()
 	{
+		CSVImporter csvi = new CSVImporter();
 
-		GameObject _gm = GameObject.Find("GameMain");   //インスタンスにして処理しないとバグる
+		GameObject _gm = GameObject.Find("GameMain");
 		MainScript _ms = _gm.GetComponent<MainScript>();
-		bool a = _ms.endFlg;
 
+		GameObject a = GameObject.FindGameObjectWithTag("tag");
 
+		_ms.nowScore = 0;
+		_ms.nowScoreView = 0;
 
+		_ms.totalScore = csvi.loadScoreArray[0];
+		_ms.bestScore = csvi.loadScoreArray[_ms.Serialize_StageNo];
+
+		_ms.TagSarchAndChangeText("ScoreBest", _ms.bestScore);
+		_ms.TagSarchAndChangeText("ScoreNow", _ms.nowScore);
+		_ms.TagSarchAndChangeText("ScoreCost", _ms.totalScore);
 	}
-
 }
 
 
@@ -905,13 +953,17 @@ public class custumLib
 		float screenY = Screen.height;
 		float ratio = screenX / screenY;
 
+		float setCameraSize = cameraSize * 0.5625f / ratio;
+		//MainCamera.orthographicSize = setCameraSize;
+
+
 		//スクリーン座標
 		float yMin = cameraSize;
 		float yMax = yMin * -1f;
 		float xMin = yMin * ratio * -1f;
 		float xMax = xMin * -1f;
 
-		Debug.Log($"X({xMin})({xMax}) Y({yMin})({yMin})");
+		//Debug.Log($"X({xMin})({xMax}) Y({yMin})({yMin})");
 	}
 }
 

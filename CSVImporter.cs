@@ -51,7 +51,7 @@ public class CSVImporter
 		{
 			//ファイルがなければ生成
 			File.WriteAllText(csvPath, "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
-			Debug.Log("デフォルト保存保存しました");
+			Debug.Log("デフォルト設定を保存しました");
 		}
 		string csvData = File.ReadAllText(csvPath);
 		string[] csvArrayString = csvData.Split(",");
