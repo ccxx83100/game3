@@ -13,7 +13,7 @@ public class OnScroll : MonoBehaviour
 	public void Check()
 	{
 		GameObject _bg = GameObject.Find("BackGroundCollider");
-		Vector3 _bgPos = new Vector3(15, 1, -1);
+		Vector3 _bgPos = new Vector3(20, 0, -1);
 		_bg.transform.position = _bgPos;
 	}
 }

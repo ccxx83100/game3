@@ -6,7 +6,7 @@ using TMPro;
 
 public class MainScript : MonoBehaviour
 {
-	public GameObject PanelPrefab, BallPrefab, ParticlePrefab;      //プレハブ設定用のGameObject
+	public GameObject PanelPrefab, BallPrefab, ParticlePrefab, BreakEffectPrefab;      //プレハブ設定用のGameObject
 	private float panelOneSize, panelScale;
 	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize, panelSize;
 	private float[,,] panelVecter2XY;
@@ -52,6 +52,7 @@ public class MainScript : MonoBehaviour
 		}
 
 		testTest(); //後で消す
+
 	}
 
 	///-------------------------------------------------------------------------------
@@ -279,7 +280,7 @@ public class MainScript : MonoBehaviour
 			endFlg = false;
 
 			GameObject NextButton = GameObject.Find("NextButton");
-			NextButton.transform.position = new Vector3(0.0f, -3.4f, 0f);
+			NextButton.transform.position = new Vector3(0.0f, -2.9f, 0f);
 
 			//ベストスコア更新時のみ
 			if (nowScore > bestScore)
@@ -609,8 +610,9 @@ public class MainScript : MonoBehaviour
 		particleCount++;
 		float ptc_Xpos = _effectGO.transform.position.x;
 		float ptc_Ypos = _effectGO.transform.position.y;
-		Vector3 instancePos = new Vector3(ptc_Xpos, ptc_Ypos, -1);
-		GameObject Pto = Instantiate(ParticlePrefab, instancePos, new Quaternion(90f, 0f, 0f, 1.0f)) as GameObject;
+		Vector3 instancePos = new Vector3(ptc_Xpos, ptc_Ypos, -0.09f);
+		//GameObject Pto = Instantiate(ParticlePrefab, instancePos, new Quaternion(90f, 0f, 0f, 2.0f)) as GameObject;
+		GameObject Pto = Instantiate(BreakEffectPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
 		Pto.name = "ParticleObject" + particleCount;
 		StartCoroutine(DestroyPaticle(2.0f, Pto)); //コールチンを使用し遅延処理
 	}
