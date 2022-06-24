@@ -25,10 +25,8 @@ public class MouseDrag : MonoBehaviour
 		_sr.material.color = _sr.material.color - new Color32(0, 0, 0, 255);
 		Vector3 _pos = gameObject.transform.position;
 		_pos.z = -1;
-
 		gameObject.transform.position = _pos;
 	}
-
 
 	public Vector3 sw_startPos;
 	///-------------------------------------------------------------------------------
@@ -60,10 +58,8 @@ public class MouseDrag : MonoBehaviour
 		float sw_nowPosX = _convert.x;
 		float sw_nowPosY = _convert.y;
 
-
 		float moveX = sw_startPos.x - sw_nowPosX;
 		float moveY = sw_startPos.y - sw_nowPosY;
-
 
 		float mathAbsX = Mathf.Abs(moveX);
 		float mathAbsY = Mathf.Abs(moveY);

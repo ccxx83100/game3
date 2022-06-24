@@ -13,11 +13,10 @@ public class StageList
 	private int[,] stageArray, hintArray;
 	private int breakCount;
 
-
 	/// <summary>
 	/// 総ステージ数 [重要※！]ステージ数を増やしたら増やす
 	/// </summary>
-	public int switchStage = 10;
+	public int switchStage = 11;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -235,14 +234,12 @@ public class StageList
 				startPos = new int[] { 1, 1 };
 				stageArray = new int[,]
 				{
-						{0,0,0,0,0,0,0},
-						{0,1,1,1,1,1,0},
-						{0,1,1,1,1,1,0},
-						{0,1,1,1,1,1,0},
-						{0,1,1,1,1,1,0},
-						{0,1,1,1,1,1,0},
-						{0,1,1,1,1,1,0},
-						{0,0,0,0,0,0,0},
+						{0,0,0,0,0,0},
+						{0,1,1,1,1,0},
+						{0,1,1,1,1,0},
+						{0,1,1,1,1,0},
+						{0,1,1,1,1,0},
+						{0,0,0,0,0,0},
 				};
 				hintArray = new int[,] { };
 				breakCount = 9;

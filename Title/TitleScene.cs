@@ -17,7 +17,7 @@ public class TitleScene : MonoBehaviour
 		//クリックの処理
 		if (Input.GetMouseButtonDown(0))
 		{
-			ChangeScene();
+			Invoke("ChangeScene", 0.2f);
 		}
 	}
 

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class MainScript : MonoBehaviour
 {
-	public GameObject PanelPrefab, BallPrefab, ParticlePrefab, BreakEffectPrefab;      //プレハブ設定用のGameObject
+	public GameObject PanelPrefab, BallPrefab, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
 	private float panelOneSize, panelScale;
 	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize, panelSize;
 	private float[,,] panelVecter2XY;
@@ -16,8 +17,7 @@ public class MainScript : MonoBehaviour
 	private int breakCount;
 	[SerializeField]
 	public int Serialize_StageNo;
-	[SerializeField]
-	public int onePanelPoint = 10;
+	private int onePanelPoint = 10;
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
@@ -29,8 +29,13 @@ public class MainScript : MonoBehaviour
 	StageList stl = new StageList();            //ステージリストのインスタンス
 	public int bestScore, nowScore, nowScoreView, totalScore;
 
+	public float bugCheck;
+
+
 	[SerializeField]
-	public Camera mainCamera;
+	public float ballMove = 0.15f;      //ボールの移動速度
+	public float ballRotation = 11.0f;  //ボールの回転速度
+	public float ballMoveTime;          //ボール速度がバグるのでTime.deltaTimeを仮実装
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -48,7 +53,11 @@ public class MainScript : MonoBehaviour
 			startFlg = true;
 			StartReset_Fnc(Serialize_StageNo);
 			startFlg = false;
-			AnimationStop();
+			AnimationStop(StageClearAnimObject, "thisPlay");
+			AnimationStop(NewRecoadAnimObject, "thisPlay");
+			GameObject newRecord = GameObject.FindGameObjectWithTag("NewRecord");
+			newRecord.transform.position = new Vector3(-1000, 0, -0.1f);
+
 		}
 
 		testTest(); //後で消す
@@ -72,9 +81,7 @@ public class MainScript : MonoBehaviour
 		{
 			if (Input.GetMouseButtonDown(0))
 			{
-				//Vector3 mouseClickPosition = Input.mousePosition;
-				//BreakClick_Fnc();
-				BreakClick_Fnc2();
+				ClickBreak();
 			}
 		}
 		if (panelArray != null)
@@ -83,7 +90,7 @@ public class MainScript : MonoBehaviour
 			foreach (int i in panelArray) if (i == 1) iCount++;
 			if (iCount == 1)
 			{
-				AnimationPlay();
+				AnimationPlay(StageClearAnimObject, "thisPlay");
 				Clear_func();
 			}
 		}
@@ -99,17 +106,22 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	public void StartReset_Fnc(int stgNo)
 	{
+		ballMoveTime = ballMove * Time.deltaTime * 100.0f;
+		Debug.Log(ballMoveTime);
+		Debug.Log(Time.deltaTime);
+
 		particleCount = 0;
 
 		GameObject NextButton = GameObject.Find("NextButton");
 		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
-
+		GameObject _bg = GameObject.Find("BackGroundCollider");
+		Vector3 _bgPos = new Vector3(0, 0, -0.5f);
+		_bg.transform.position = _bgPos;
 
 		Camera MainCamera = Camera.main;
 		cameraSize = MainCamera.orthographicSize;
 
 		custumLib.ScreenData();
-
 
 		//ステージリストから値を取得		
 		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(stgNo);
@@ -133,7 +145,6 @@ public class MainScript : MonoBehaviour
 		}
 
 		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
-
 		panelNum = (int)(panelNumX * panelNumY);        //パネルの総数(穴抜き)
 		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
@@ -197,7 +208,7 @@ public class MainScript : MonoBehaviour
 		float ballScale = cameraSize * 2 * panelScale;
 		Vector3 v3_ballScale = new Vector3(ballScale, ballScale, ballScale);
 		Bo.transform.localScale = v3_ballScale;
-		//UIの操作
+
 		maxDeleteCount = breakCount;
 		nowDeleteCount = maxDeleteCount;
 	}
@@ -246,7 +257,29 @@ public class MainScript : MonoBehaviour
 		{
 			Destroy(i);
 		}
-		AnimationStop();
+		AnimationStop(StageClearAnimObject, "thisPlay");
+	}
+
+	public Animator StageClearAnimObject, NewRecoadAnimObject;
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// アニメ停止 (引数1:Animator 引数2:Motion		速度調整で停止して、0フレーム目に移動)
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void AnimationStop(Animator _anim, string _str)
+	{
+		_anim.Play(_str, 0, 0);
+		_anim.speed = 0;
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// アニメ再生 (引数1:Animator 引数2:Motion		速度調整で再生)
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void AnimationPlay(Animator _anim, string _str)
+	{
+		_anim.speed = 1;
 	}
 
 	///-------------------------------------------------------------------------------
@@ -275,13 +308,14 @@ public class MainScript : MonoBehaviour
 		{
 			nowScore = nowScore + onePanelPoint;        //最後のパネルは消さないので1個分のスコア加算
 			nowScoreView = nowScore;
-
 			TagSarchAndChangeText("ScoreNow", nowScoreView);
 			endFlg = false;
 
-			GameObject NextButton = GameObject.Find("NextButton");
-			NextButton.transform.position = new Vector3(0.0f, -2.9f, 0f);
-
+			if (Serialize_StageNo != stl.switchStage)
+			{
+				GameObject NextButton = GameObject.Find("NextButton");
+				NextButton.transform.position = new Vector3(0.0f, -2.9f, 0f);
+			}
 			//ベストスコア更新時のみ
 			if (nowScore > bestScore)
 			{
@@ -297,6 +331,10 @@ public class MainScript : MonoBehaviour
 
 				dal.Array1DLog(loadCsvArray);
 				csvi.CsvSave(loadCsvArray);
+
+				GameObject newRecord = GameObject.FindGameObjectWithTag("NewRecord");
+				newRecord.transform.position = new Vector3(0, 0, -0.6f);
+				AnimationPlay(NewRecoadAnimObject, "thisPlay");
 			}
 		}
 	}
@@ -367,7 +405,7 @@ public class MainScript : MonoBehaviour
 	/// クリックしたパネルを削除
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	void BreakClick_Fnc2()
+	void ClickBreak()
 	{
 		if (nowDeleteCount != 0)
 		{
@@ -407,7 +445,6 @@ public class MainScript : MonoBehaviour
 					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
 					imgNo_Now.SpriteNumSet(nowDeleteCount);
 				}
-
 			}
 		}
 	}
@@ -448,10 +485,6 @@ public class MainScript : MonoBehaviour
 		}
 	}
 
-	[SerializeField]
-	public float ballMove = 0.15f;      //ボールの移動速度
-	[SerializeField]
-	public float ballRotation = 11.0f;  //ボールの回転速度
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -463,6 +496,8 @@ public class MainScript : MonoBehaviour
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
 		Transform myTransform = Bo.transform;
+
+		float _ballMoveTime = ballMove * Time.deltaTime * 100.0f;
 
 		if (goArray != null)
 		{
@@ -491,7 +526,7 @@ public class MainScript : MonoBehaviour
 					}
 					else
 					{
-						_pos.x = _pos.x + ballMove;
+						_pos.x = _pos.x + _ballMoveTime;
 						myTransform.Rotate(0.0f, (ballRotation * -1), 0.0f, Space.World);
 					}
 					break;
@@ -512,7 +547,7 @@ public class MainScript : MonoBehaviour
 					}
 					else
 					{
-						_pos.x = _pos.x - ballMove;
+						_pos.x = _pos.x - _ballMoveTime;
 						myTransform.Rotate(0.0f, ballRotation, 0.0f, Space.World);
 					}
 					break;
@@ -533,7 +568,7 @@ public class MainScript : MonoBehaviour
 					}
 					else
 					{
-						_pos.y = _pos.y + ballMove;
+						_pos.y = _pos.y + _ballMoveTime;
 						myTransform.Rotate(ballRotation, 0.0f, 0.0f, Space.World);
 					}
 					break;
@@ -554,7 +589,7 @@ public class MainScript : MonoBehaviour
 					}
 					else
 					{
-						_pos.y = _pos.y - ballMove;
+						_pos.y = _pos.y - _ballMoveTime;
 						myTransform.Rotate((ballRotation * -1), 0.0f, 0.0f, Space.World);
 					}
 					break;
@@ -611,10 +646,12 @@ public class MainScript : MonoBehaviour
 		float ptc_Xpos = _effectGO.transform.position.x;
 		float ptc_Ypos = _effectGO.transform.position.y;
 		Vector3 instancePos = new Vector3(ptc_Xpos, ptc_Ypos, -0.09f);
-		//GameObject Pto = Instantiate(ParticlePrefab, instancePos, new Quaternion(90f, 0f, 0f, 2.0f)) as GameObject;
-		GameObject Pto = Instantiate(BreakEffectPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
+		//GameObject Pto = Instantiate(BreakEffectPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
+		GameObject Pto = Instantiate(PanelBreakPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
+		float _effectScale = panelScaleMin * 7.4f;
+		Pto.transform.localScale = new Vector3(_effectScale, _effectScale, _effectScale);
 		Pto.name = "ParticleObject" + particleCount;
-		StartCoroutine(DestroyPaticle(2.0f, Pto)); //コールチンを使用し遅延処理
+		StartCoroutine(DestroyPaticle(2.0f, Pto));      //コールチンを使用し遅延処理
 	}
 
 	///-------------------------------------------------------------------------------
@@ -672,29 +709,6 @@ public class MainScript : MonoBehaviour
 	}
 
 	///-------------------------------------------------------------------------------
-	public Animator clearAnim;
-	///-------------------------------------------------------------------------------
-	/// <summary>
-	/// アニメ停止 (速度調整で停止して、0フレーム目に移動)
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	void AnimationStop()
-	{
-		clearAnim.Play("ClearAnimation", 0, 0);
-		clearAnim.speed = 0;
-	}
-
-	///-------------------------------------------------------------------------------
-	/// <summary>
-	/// アニメ再生 (速度調整で再生)
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	void AnimationPlay()
-	{
-		clearAnim.speed = 1;
-	}
-
-	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
 	/// </summary>
@@ -745,6 +759,7 @@ public class MainScript : MonoBehaviour
 			}
 		}
 	}
+
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// 後で削除
@@ -763,7 +778,7 @@ public class MainScript : MonoBehaviour
 		ITO.SetProperty(100);
 
 		TryCatch TC = new TryCatch();
-		TC.TryC();
+		//TC.TryC();
 
 
 	}
@@ -832,7 +847,7 @@ public class IndexerTest_old
 public class TryCatch
 {
 
-	int waru = 0;
+	int waru = 1;
 	public void TryC()
 	{
 		Debug.Log("tryc");
