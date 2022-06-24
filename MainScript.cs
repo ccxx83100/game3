@@ -15,27 +15,21 @@ public class MainScript : MonoBehaviour
 	private int[,] panelArray, hintArray;
 	private int[] nowPosition;
 	private int breakCount;
-	[SerializeField]
-	public int Serialize_StageNo;
-	private int onePanelPoint = 10;
+	[SerializeField] public int Serialize_StageNo;
+	private int onePanelPoint = 30;
 	public int resetCost = 30;
 	public int hintCost = 200;
 	public int[] loadCsvArray;
-	public bool startFlg, endFlg;               //スタート　エンドフラグ
-	public bool escapeFlg = true;               //ステージセレクトバグ回避フラグ
-	private bool hintFlg;
-	DebugArrayLog dal = new DebugArrayLog();    //配列デバッグ用のインスタンス
-	CSVImporter csvi = new CSVImporter();       //CSV読み書き込み用のインスタンス
-	StageList stl = new StageList();            //ステージリストのインスタンス
+	public bool startFlg, endFlg;                           //スタート　エンドフラグ
+	public bool escapeFlg = true;                           //ステージセレクトバグ回避フラグ
+	private bool hintFlg;                                   //ヒントは1回なので
+	DebugArrayLog dal = new DebugArrayLog();                //配列デバッグ用のインスタンス
+	CSVImporter csvi = new CSVImporter();                   //CSV読み書き込み用のインスタンス
+	StageList stl = new StageList();                        //ステージリストのインスタンス
 	public int bestScore, nowScore, nowScoreView, totalScore;
-
-	public float bugCheck;
-
-
-	[SerializeField]
-	public float ballMove = 0.15f;      //ボールの移動速度
-	public float ballRotation = 11.0f;  //ボールの回転速度
-	public float ballMoveTime;          //ボール速度がバグるのでTime.deltaTimeを仮実装
+	public float ballMove = 0.15f;         //ボールの移動速度
+	public const float ballRotation = 11.0f;                //ボールの回転速度
+	public float ballMoveTime;                              //ボール速度がバグるのでTime.deltaTimeを仮実装
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -47,6 +41,10 @@ public class MainScript : MonoBehaviour
 		csvi.CsvLoad();     //csvをロード
 		loadCsvArray = csvi.loadScoreArray;
 
+		//RectTransform _rectTransform = _goUI.GetComponent<RectTransform>();
+		GameObject.FindGameObjectWithTag("SettingWindow").GetComponent<RectTransform>().anchoredPosition
+		= new Vector3(1800.0f, 0.0f, -110.0f);
+
 		if (Serialize_StageNo >= 1)
 		{
 			escapeFlg = false;
@@ -57,7 +55,6 @@ public class MainScript : MonoBehaviour
 			AnimationStop(NewRecoadAnimObject, "thisPlay");
 			GameObject newRecord = GameObject.FindGameObjectWithTag("NewRecord");
 			newRecord.transform.position = new Vector3(-1000, 0, -0.1f);
-
 		}
 
 		testTest(); //後で消す
@@ -96,7 +93,7 @@ public class MainScript : MonoBehaviour
 		}
 	}
 	private GameObject Bo;
-	private int panelNum, panelNumX, panelNumY;
+	private int panelNumX, panelNumY;
 	private int maxDeleteCount, nowDeleteCount;
 
 	///-------------------------------------------------------------------------------
@@ -107,20 +104,14 @@ public class MainScript : MonoBehaviour
 	public void StartReset_Fnc(int stgNo)
 	{
 		ballMoveTime = ballMove * Time.deltaTime * 100.0f;
-		Debug.Log(ballMoveTime);
-		Debug.Log(Time.deltaTime);
-
-		particleCount = 0;
 
 		GameObject NextButton = GameObject.Find("NextButton");
 		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
+
 		GameObject _bg = GameObject.Find("BackGroundCollider");
-		Vector3 _bgPos = new Vector3(0, 0, -0.5f);
-		_bg.transform.position = _bgPos;
+		_bg.transform.position = new Vector3(0, 0, -0.5f);
 
-		Camera MainCamera = Camera.main;
-		cameraSize = MainCamera.orthographicSize;
-
+		cameraSize = Camera.main.orthographicSize;
 		custumLib.ScreenData();
 
 		//ステージリストから値を取得		
@@ -145,7 +136,6 @@ public class MainScript : MonoBehaviour
 		}
 
 		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
-		panelNum = (int)(panelNumX * panelNumY);        //パネルの総数(穴抜き)
 		panelOneSize = (panelScale * cameraSize) * 2;   //パネルの移動(複製パネルの移動座標)
 
 		//パネルセットの初期位置
@@ -192,9 +182,8 @@ public class MainScript : MonoBehaviour
 	void StartOnly()
 	{
 		goArray = new string[panelNumY, panelNumX];
-		//パネル配置
-		PanelSetUP_Fnc();
-		//ボール配置
+		PanelSetUP_Fnc();       //パネル配置
+
 		Vector3 ballPos = new Vector3(0, 0, 0);
 		ballPos.x = defaultX + panelOneSize * nowPosition[1];
 		ballPos.y = defaultY - panelOneSize * nowPosition[0];
@@ -411,8 +400,8 @@ public class MainScript : MonoBehaviour
 		{
 			Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			bool destroyFlg = false;
-			int _row = -1;
-			int _col = -1;
+			int _row = 0;
+			int _col = 0;
 			for (int i = 1; i < panelVecter2XY.GetLength(0) - 1; i++)
 			{
 				for (int j = 1; j < panelVecter2XY.GetLength(1) - 1; j++)
@@ -468,13 +457,10 @@ public class MainScript : MonoBehaviour
 				if (panelArray[i, j] >= 1)
 				{
 					// プレハブを指定位置に生成
-					Vector2 instancePos = new Vector2(panel_xPos, panel_yPos);
-					Po = Instantiate(PanelPrefab, instancePos, Quaternion.identity) as GameObject;
+					//Vector2 instancePos = new Vector2(panel_xPos, panel_yPos);
+					Po = Instantiate(PanelPrefab, new Vector2(panel_xPos, panel_yPos), Quaternion.identity) as GameObject;
 					Po.name = "Po_" + "R" + i + "C" + j;
-					Vector2 goScale = new Vector2(1, 1);
-					goScale.x = panelScaleMin;
-					goScale.y = panelScaleMin;
-					Po.transform.localScale = goScale;
+					Po.transform.localScale = new Vector2(panelScaleMin, panelScaleMin);
 
 					//配列にインスタンス名を追加
 					goArray[i, j] = Po.name;
@@ -495,7 +481,6 @@ public class MainScript : MonoBehaviour
 	{
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
-		Transform myTransform = Bo.transform;
 
 		float _ballMoveTime = ballMove * Time.deltaTime * 100.0f;
 
@@ -527,7 +512,7 @@ public class MainScript : MonoBehaviour
 					else
 					{
 						_pos.x = _pos.x + _ballMoveTime;
-						myTransform.Rotate(0.0f, (ballRotation * -1), 0.0f, Space.World);
+						Bo.transform.Rotate(0.0f, (ballRotation * -1), 0.0f, Space.World);
 					}
 					break;
 				case "L":
@@ -548,7 +533,7 @@ public class MainScript : MonoBehaviour
 					else
 					{
 						_pos.x = _pos.x - _ballMoveTime;
-						myTransform.Rotate(0.0f, ballRotation, 0.0f, Space.World);
+						Bo.transform.Rotate(0.0f, ballRotation, 0.0f, Space.World);
 					}
 					break;
 				case "U":
@@ -569,7 +554,7 @@ public class MainScript : MonoBehaviour
 					else
 					{
 						_pos.y = _pos.y + _ballMoveTime;
-						myTransform.Rotate(ballRotation, 0.0f, 0.0f, Space.World);
+						Bo.transform.Rotate(ballRotation, 0.0f, 0.0f, Space.World);
 					}
 					break;
 				case "D":
@@ -590,7 +575,7 @@ public class MainScript : MonoBehaviour
 					else
 					{
 						_pos.y = _pos.y - _ballMoveTime;
-						myTransform.Rotate((ballRotation * -1), 0.0f, 0.0f, Space.World);
+						Bo.transform.Rotate((ballRotation * -1), 0.0f, 0.0f, Space.World);
 					}
 					break;
 				default:
@@ -607,8 +592,7 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	private void BoStop_Fnc()
 	{
-		GameObject BackGroundObject = GameObject.Find("BackGroundCollider");   //インスタンスにして処理しないとバグる
-		MouseDrag MouseDragScript = BackGroundObject.GetComponent<MouseDrag>();
+		MouseDrag MouseDragScript = GameObject.Find("BackGroundCollider").GetComponent<MouseDrag>();
 		MouseDragScript.OnMouseDown();
 		MouseDrag.mouseLRUD = "STOP";
 	}
@@ -616,7 +600,6 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// オブジェクトを削除する (引数1:オブジェクトではなく、オブジェクト名)
-	/// 削除してパーティクルを実行    
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	private void Delete_Fnc(string deleteObjectName)
@@ -636,21 +619,15 @@ public class MainScript : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// 爆発エフェクト (引数1:爆発させたいインスタンスがある場所を指定)
+	/// ※※パーティクルからスプライトアニメになっているのできれいにしたい
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	private int particleCount = 0;
 	private void Particle_Fnc(GameObject obj)
 	{
 		GameObject _effectGO = obj;
-		particleCount++;
-		float ptc_Xpos = _effectGO.transform.position.x;
-		float ptc_Ypos = _effectGO.transform.position.y;
-		Vector3 instancePos = new Vector3(ptc_Xpos, ptc_Ypos, -0.09f);
-		//GameObject Pto = Instantiate(BreakEffectPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
-		GameObject Pto = Instantiate(PanelBreakPrefab, instancePos, new Quaternion(90f, 0f, 0f, 0f)) as GameObject;
-		float _effectScale = panelScaleMin * 7.4f;
+		GameObject Pto = Instantiate(PanelBreakPrefab, new Vector3(_effectGO.transform.position.x, _effectGO.transform.position.y, -0.09f), Quaternion.identity) as GameObject;
+		float _effectScale = panelScaleMin * 7.4f;      //何で7.4なのか分からない
 		Pto.transform.localScale = new Vector3(_effectScale, _effectScale, _effectScale);
-		Pto.name = "ParticleObject" + particleCount;
 		StartCoroutine(DestroyPaticle(2.0f, Pto));      //コールチンを使用し遅延処理
 	}
 
@@ -768,7 +745,6 @@ public class MainScript : MonoBehaviour
 	private void testTest()
 	{
 		ScoreClass SC = new ScoreClass();
-
 
 		IndexerTest IT = new IndexerTest();
 		int a = IT[0];
@@ -919,6 +895,7 @@ public class custumLib
 		for (int i = 0; i < textBase.Length; i++)
 		{
 			if (textBase.Substring(i, 1) == "R")
+			//if (textBase[i] == 'R')
 			{
 				for (int j = i; j < textBase.Length; j++)
 				{
