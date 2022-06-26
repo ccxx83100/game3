@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.IO;
 
 ///-------------------------------------------------------------------------------
 /// <summary>
@@ -17,23 +19,53 @@ public class SettingButton : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	public void OnClickSettingIn()
 	{
-		GameObject _goUI = GameObject.FindGameObjectWithTag("SettingWindow");
-		RectTransform _rectTransform = _goUI.GetComponent<RectTransform>();
-		_goUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(0.0f, 0.0f, -110.0f);
+		GameObject.FindGameObjectWithTag("SettingWindow").GetComponent<RectTransform>()
+		.anchoredPosition = new Vector3(0.0f, 0.0f, -110.0f);
 	}
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	///　外周・バック
+	///　外周・バッククリック時
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	public void OnClickSettingOut()
 	{
-		GameObject _goUI = GameObject.FindGameObjectWithTag("SettingWindow");
-		RectTransform _rectTransform = _goUI.GetComponent<RectTransform>();
-		_goUI.GetComponent<RectTransform>().anchoredPosition = new Vector3(1800.0f, 0.0f, -110.0f);
+		GameObject.FindGameObjectWithTag("SettingWindow").GetComponent<RectTransform>()
+		.anchoredPosition = new Vector3(1800.0f, 0.0f, -110.0f);
 
-		GameObject _bg = GameObject.Find("BackGroundCollider");
-		_bg.transform.position = new Vector3(0, 0, -0.5f);
+		GameObject.Find("BackGroundCollider").transform.position = new Vector3(0, 0, -0.5f);
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// タイトルへ戻る
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public void OnClickTitle()
+	{
+		SceneManager.LoadScene("Scene_Title");
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	///　保存データを初期化
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public void OnClickDataReset()
+	{
+		Debug.Log("データリセット");
+		string csvPath = Application.persistentDataPath + "/save_data.csv";
+		File.WriteAllText(csvPath, "10000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
+		SceneManager.LoadScene("Scene_Title");
+	}
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// エディットモードへ
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public void OnClickEdit()
+	{
+		SceneManager.LoadScene("Scene_EditMode");
 	}
 }

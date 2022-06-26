@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using TMPro;
-using UnityEngine.SceneManagement;
 
 public class MainScript : MonoBehaviour
 {
@@ -27,7 +26,7 @@ public class MainScript : MonoBehaviour
 	CSVImporter csvi = new CSVImporter();                   //CSV読み書き込み用のインスタンス
 	StageList stl = new StageList();                        //ステージリストのインスタンス
 	public int bestScore, nowScore, nowScoreView, totalScore;
-	public float ballMove = 0.15f;         //ボールの移動速度
+	public float ballMove = 0.15f;                          //ボールの移動速度
 	public const float ballRotation = 11.0f;                //ボールの回転速度
 	public float ballMoveTime;                              //ボール速度がバグるのでTime.deltaTimeを仮実装
 
@@ -41,10 +40,6 @@ public class MainScript : MonoBehaviour
 		csvi.CsvLoad();     //csvをロード
 		loadCsvArray = csvi.loadScoreArray;
 
-		//RectTransform _rectTransform = _goUI.GetComponent<RectTransform>();
-		GameObject.FindGameObjectWithTag("SettingWindow").GetComponent<RectTransform>().anchoredPosition
-		= new Vector3(1800.0f, 0.0f, -110.0f);
-
 		if (Serialize_StageNo >= 1)
 		{
 			escapeFlg = false;
@@ -53,14 +48,15 @@ public class MainScript : MonoBehaviour
 			startFlg = false;
 			AnimationStop(StageClearAnimObject, "thisPlay");
 			AnimationStop(NewRecoadAnimObject, "thisPlay");
-			GameObject newRecord = GameObject.FindGameObjectWithTag("NewRecord");
-			newRecord.transform.position = new Vector3(-1000, 0, -0.1f);
+			GameObject.FindGameObjectWithTag("NewRecord").transform.position = new Vector3(-1000, 0, -0.1f);
+			GameObject.FindGameObjectWithTag("SettingWindow").GetComponent<RectTransform>()
+			.anchoredPosition = new Vector3(1800.0f, 0.0f, -110.0f);
 		}
 
 		testTest(); //後で消す
 
 	}
-
+	private GameObject Bo;
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// UPDATE
@@ -92,7 +88,7 @@ public class MainScript : MonoBehaviour
 			}
 		}
 	}
-	private GameObject Bo;
+
 	private int panelNumX, panelNumY;
 	private int maxDeleteCount, nowDeleteCount;
 
@@ -105,14 +101,11 @@ public class MainScript : MonoBehaviour
 	{
 		ballMoveTime = ballMove * Time.deltaTime * 100.0f;
 
-		GameObject NextButton = GameObject.Find("NextButton");
-		NextButton.transform.position = new Vector3(0f, 7.0f, 0f);
-
-		GameObject _bg = GameObject.Find("BackGroundCollider");
-		_bg.transform.position = new Vector3(0, 0, -0.5f);
+		GameObject.Find("NextButton").transform.position = new Vector3(0f, 7.0f, 0f);
+		GameObject.Find("BackGroundCollider").transform.position = new Vector3(0, 0, -0.5f);
 
 		cameraSize = Camera.main.orthographicSize;
-		custumLib.ScreenData();
+		CustumLib.ScreenData();
 
 		//ステージリストから値を取得		
 		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(stgNo);
@@ -157,10 +150,8 @@ public class MainScript : MonoBehaviour
 		nowDeleteCount = maxDeleteCount;
 
 		//スプライトナンバー処理
-		GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
-		ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
-		GameObject BreakCountObMax = GameObject.Find("BreakCountMax");
-		ImageNo imgNo_Max = BreakCountObMax.GetComponent<ImageNo>();
+		ImageNo imgNo_Now = GameObject.Find("BreakCountNow").GetComponent<ImageNo>();
+		ImageNo imgNo_Max = GameObject.Find("BreakCountMax").GetComponent<ImageNo>();
 		imgNo_Now.SpriteNumSet(nowDeleteCount);
 		imgNo_Max.SpriteNumSet(maxDeleteCount);
 
@@ -195,8 +186,7 @@ public class MainScript : MonoBehaviour
 		Bo.transform.rotation = rotQ;
 		Bo.name = "Ball";
 		float ballScale = cameraSize * 2 * panelScale;
-		Vector3 v3_ballScale = new Vector3(ballScale, ballScale, ballScale);
-		Bo.transform.localScale = v3_ballScale;
+		Bo.transform.localScale = new Vector3(ballScale, ballScale, ballScale);
 
 		maxDeleteCount = breakCount;
 		nowDeleteCount = maxDeleteCount;
@@ -212,7 +202,9 @@ public class MainScript : MonoBehaviour
 		Debug.Log("-----RESET-----");
 		MouseDrag.mouseLRUD = "STOP";
 
-		BoStop_Fnc();   //ボールを止める
+		BoStop_Fnc();
+
+		GameObject.FindGameObjectWithTag("NewRecord").transform.position = new Vector3(-1000, 0, -0.1f);
 
 		//パネルを全部削除
 		for (int i = 0; i < panelArray.GetLength(0); i++)
@@ -273,7 +265,7 @@ public class MainScript : MonoBehaviour
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// タグ検索してTextMeshProのテキストを変更
+	/// タグ検索してTextMeshProのテキストを変更 (引数1:string 検索タグ  引数2:T 変更後のテキスト)
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	public void TagSarchAndChangeText<T>(string _tagName, T _param)
@@ -315,14 +307,10 @@ public class MainScript : MonoBehaviour
 				int _addScore = nowScore - bestScore;
 				totalScore += _addScore;
 				loadCsvArray[0] = totalScore;
-
 				TagSarchAndChangeText("ScoreCost", totalScore);
-
-				dal.Array1DLog(loadCsvArray);
 				csvi.CsvSave(loadCsvArray);
 
-				GameObject newRecord = GameObject.FindGameObjectWithTag("NewRecord");
-				newRecord.transform.position = new Vector3(0, 0, -0.6f);
+				GameObject.FindGameObjectWithTag("NewRecord").transform.position = new Vector3(0, 0, -0.6f);
 				AnimationPlay(NewRecoadAnimObject, "thisPlay");
 			}
 		}
@@ -339,9 +327,7 @@ public class MainScript : MonoBehaviour
 		{
 			totalScore -= _cost;
 			loadCsvArray = csvi.loadScoreArray;
-			dal.Array1DLog(loadCsvArray);
 			loadCsvArray[0] = totalScore;
-
 			TagSarchAndChangeText("ScoreCost", totalScore);
 
 			csvi.CsvSave(loadCsvArray);
@@ -413,6 +399,7 @@ public class MainScript : MonoBehaviour
 							_row = i;
 							_col = j;
 							destroyFlg = true;
+							break;
 						}
 					}
 				}
@@ -430,8 +417,7 @@ public class MainScript : MonoBehaviour
 					Delete_Fnc(destroyName);
 					nowDeleteCount--;
 
-					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
-					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
+					ImageNo imgNo_Now = GameObject.Find("BreakCountNow").GetComponent<ImageNo>();
 					imgNo_Now.SpriteNumSet(nowDeleteCount);
 				}
 			}
@@ -457,7 +443,6 @@ public class MainScript : MonoBehaviour
 				if (panelArray[i, j] >= 1)
 				{
 					// プレハブを指定位置に生成
-					//Vector2 instancePos = new Vector2(panel_xPos, panel_yPos);
 					Po = Instantiate(PanelPrefab, new Vector2(panel_xPos, panel_yPos), Quaternion.identity) as GameObject;
 					Po.name = "Po_" + "R" + i + "C" + j;
 					Po.transform.localScale = new Vector2(panelScaleMin, panelScaleMin);
@@ -608,8 +593,8 @@ public class MainScript : MonoBehaviour
 		Destroy(DeleteObject);
 
 		//配列から削除
-		int getC = int.Parse(custumLib.substRC_Num(DeleteObject.name, "C"));
-		int getR = int.Parse(custumLib.substRC_Num(DeleteObject.name, "R"));
+		int getC = int.Parse(CustumLib.substRC_Num(DeleteObject.name, "C"));
+		int getR = int.Parse(CustumLib.substRC_Num(DeleteObject.name, "R"));
 		panelArray[getC, getR] = 0;
 		goArray[getC, getR] = null;
 
@@ -626,7 +611,7 @@ public class MainScript : MonoBehaviour
 	{
 		GameObject _effectGO = obj;
 		GameObject Pto = Instantiate(PanelBreakPrefab, new Vector3(_effectGO.transform.position.x, _effectGO.transform.position.y, -0.09f), Quaternion.identity) as GameObject;
-		float _effectScale = panelScaleMin * 7.4f;      //何で7.4なのか分からない
+		float _effectScale = panelScaleMin * 7.3f;      //1080/512??
 		Pto.transform.localScale = new Vector3(_effectScale, _effectScale, _effectScale);
 		StartCoroutine(DestroyPaticle(2.0f, Pto));      //コールチンを使用し遅延処理
 	}
@@ -680,58 +665,6 @@ public class MainScript : MonoBehaviour
 				else
 				{
 					_hintR = i;
-				}
-			}
-		}
-	}
-
-	///-------------------------------------------------------------------------------
-	/// <summary>
-	/// クリックして削除 (クリック位置から近いオブジェクトを探して削除)
-	/// </summary>
-	///-------------------------------------------------------------------------------
-	void BreakClick_Fnc()
-	{
-		Vector2 mousePos = Input.mousePosition;
-		Vector2 mousePos2D = Camera.main.ScreenToWorldPoint(mousePos);
-
-		if (nowDeleteCount != 0)
-		{
-			float minDistance = panelOneSize * 0.7f; //クリックした位置とパネルの距離
-			GameObject[] TargetObjects = GameObject.FindGameObjectsWithTag("PanelObject");
-			GameObject ConfirmObject = null;
-			foreach (GameObject target in TargetObjects)
-			{
-				float _distance = Vector2.Distance(mousePos2D, target.transform.position);
-				//Debug.Log("クリックした位置との距離:" + _distance);
-				//minDistanceとの距離比較
-				if (minDistance > _distance)
-				{
-					//繰り返して近いパネルを検索
-					minDistance = _distance;
-					//一番近いパネルをオブジェクトに格納
-					ConfirmObject = target;
-				}
-			}
-
-			if (ConfirmObject != null)
-			{
-				int notDelX = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "C"));
-				int notDelY = int.Parse(custumLib.substRC_Num(ConfirmObject.name, "R"));
-
-				if (notDelX == nowPosition[0] && notDelY == nowPosition[1])
-				{
-					//ボールがあるパネルは削除できません
-				}
-				else
-				{
-					Debug.Log("Delete? " + notDelX + ":" + notDelY);
-					Delete_Fnc(ConfirmObject.name);
-					nowDeleteCount--;
-
-					GameObject BreakCountObNow = GameObject.Find("BreakCountNow");
-					ImageNo imgNo_Now = BreakCountObNow.GetComponent<ImageNo>();
-					imgNo_Now.SpriteNumSet(nowDeleteCount);
 				}
 			}
 		}
@@ -843,6 +776,9 @@ public class TryCatch
 
 
 
+
+
+
 /// <summary>
 /// まだ作っている途中
 /// </summary>
@@ -854,11 +790,8 @@ public class ScoreClass
 	public void ScoreSet()
 	{
 		CSVImporter csvi = new CSVImporter();
-
-		GameObject _gm = GameObject.Find("GameMain");
-		MainScript _ms = _gm.GetComponent<MainScript>();
-
-		GameObject a = GameObject.FindGameObjectWithTag("tag");
+		MainScript _ms = GameObject.Find("GameMain").GetComponent<MainScript>();
+		//GameMainを探してコンポーネントでスクリプトを参照
 
 		_ms.nowScore = 0;
 		_ms.nowScoreView = 0;
@@ -877,15 +810,17 @@ public class ScoreClass
 //あとで分離するかもしれない
 //--------------------------------------------------------------------------------
 
-
+///-------------------------------------------------------------------------------
 /// <summary>
 /// ライブラリーセット　別のプロジェクトでも使うかもしれない
 /// </summary>
-public class custumLib
+///-------------------------------------------------------------------------------
+public class CustumLib
 {
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// テキストからRCの数字を取得 (引数1:テキスト 引数2:RかCの1文字)
+	/// 配列取得 testBase[i] にすると、バグる？
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	public static string substRC_Num(string textBase, string RC)
@@ -895,7 +830,6 @@ public class custumLib
 		for (int i = 0; i < textBase.Length; i++)
 		{
 			if (textBase.Substring(i, 1) == "R")
-			//if (textBase[i] == 'R')
 			{
 				for (int j = i; j < textBase.Length; j++)
 				{
@@ -942,14 +876,10 @@ public class custumLib
 	{
 		Camera MainCamera = Camera.main;
 		float cameraSize = MainCamera.orthographicSize;
-
 		float screenX = Screen.width;
 		float screenY = Screen.height;
 		float ratio = screenX / screenY;
-
 		float setCameraSize = cameraSize * 0.5625f / ratio;
-		//MainCamera.orthographicSize = setCameraSize;
-
 
 		//スクリーン座標
 		float yMin = cameraSize;
@@ -957,7 +887,6 @@ public class custumLib
 		float xMin = yMin * ratio * -1f;
 		float xMax = xMin * -1f;
 
-		//Debug.Log($"X({xMin})({xMax}) Y({yMin})({yMin})");
 	}
 }
 

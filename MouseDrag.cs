@@ -10,7 +10,7 @@ using UnityEngine;
 public class MouseDrag : MonoBehaviour
 {
 	public static string mouseLRUD;
-	public float sw_minMoveMouse = 0.1f;    //ドラックの最小距離
+	private float sw_minMoveMouse = 0.1f;    //ドラックの最小距離
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -20,15 +20,15 @@ public class MouseDrag : MonoBehaviour
 	void Start()
 	{
 		mouseLRUD = "STOP";
-		//マウス用のコリジョンを透明にしてZ軸を手前にする
 		SpriteRenderer _sr = GetComponent<SpriteRenderer>();
+		//マウス用のコリジョンを透明にしてZ軸を手前にする
 		_sr.material.color = _sr.material.color - new Color32(0, 0, 0, 255);
-		Vector3 _pos = gameObject.transform.position;
+		Vector3 _pos = this.transform.position;
 		_pos.z = -1;
 		gameObject.transform.position = _pos;
 	}
 
-	public Vector3 sw_startPos;
+	private Vector3 sw_startPos;
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// クリックしたとき
@@ -50,7 +50,7 @@ public class MouseDrag : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	void OnMouseDrag()
 	{
-		// Debug.Log(Input.mousePosition.x);
+		//Debug.Log(Input.mousePosition.x);
 		float _nowPosX = Input.mousePosition.x;
 		float _nowPosY = Input.mousePosition.y;
 

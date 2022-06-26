@@ -29,8 +29,7 @@ public class StageSelect : MonoBehaviour
 			dropDown.options.Add(optionData);
 		}
 
-		GameObject _ga = GameObject.Find("GameMain");
-		MainScript _ms = _ga.GetComponent<MainScript>();
+		MainScript _ms = GameObject.Find("GameMain").GetComponent<MainScript>();
 		int _msStageNo = _ms.Serialize_StageNo - 1;
 		dropDown.captionText.text = $"Stage {_ms.Serialize_StageNo}";
 		dropDown.value = _msStageNo;
@@ -44,19 +43,18 @@ public class StageSelect : MonoBehaviour
 	public void OnValueChanged(int value)
 	{
 
-		GameObject _bg = GameObject.Find("BackGroundCollider");
-		Vector3 _bgPos = new Vector3(0, 0, -0.5f);
-		_bg.transform.position = _bgPos;
+		//GameObject _bg = GameObject.Find("BackGroundCollider");
+		//Vector3 _bgPos = new Vector3(0, 0, -0.5f);
+		GameObject.Find("BackGroundCollider").transform.position = new Vector3(0, 0, -0.5f);
 
-		GameObject _ga = GameObject.Find("GameMain");
-		MainScript _ms = _ga.GetComponent<MainScript>();
+		MainScript _ms = GameObject.Find("GameMain").GetComponent<MainScript>();
 		bool _flg = _ms.escapeFlg;
 
 		if (!_flg)
 		{
 			///Debug.Log($"{value}番目の要素が選ばれた");
 			int _msStageNo = value + 1;
-			Debug.Log($"[StageSelect]StageNO--->{_msStageNo}");
+			//Debug.Log($"[StageSelect]StageNO--->{_msStageNo}");
 			_ms.Serialize_StageNo = _msStageNo;
 
 			GameObject[] ptcObjects;
