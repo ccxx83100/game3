@@ -7,11 +7,11 @@ using TMPro;
 public class MainScript : MonoBehaviour
 {
 	public GameObject PanelPrefab, BallPrefab, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
-	private float panelOneSize, panelScale;
-	private float defaultX, defaultY, panel_xPos, panel_yPos, panelScaleMin, cameraSize, panelSize;
-	private float[,,] panelVecter2XY;
-	private string[,] goArray;
-	private int[,] panelArray, hintArray;
+	public float panelOneSize, panelScale;
+	public float defaultX, defaultY, panelScaleMin, cameraSize, panelSize;
+	public float[,,] panelVecter2XY;
+	public string[,] goArray;
+	public int[,] panelArray, hintArray;
 	private int[] nowPosition;
 	private int breakCount;
 	[SerializeField] public int Serialize_StageNo;
@@ -164,6 +164,7 @@ public class MainScript : MonoBehaviour
 			ResetOnly();
 		}
 	}
+
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -429,7 +430,7 @@ public class MainScript : MonoBehaviour
 	/// パネルの配置/インスタンスを生成し座標を配列に入れる
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	private void PanelSetUP_Fnc()
+	public void PanelSetUP_Fnc()
 	{
 		GameObject Po;
 		for (int i = 0; i < panelArray.GetLength(0); i++)
@@ -437,8 +438,8 @@ public class MainScript : MonoBehaviour
 			for (int j = 0; j < panelArray.GetLength(1); j++)
 			{
 				//インスタンスの生成位置
-				panel_xPos = defaultX + (j * panelOneSize);
-				panel_yPos = defaultY + (i * panelOneSize) * -1;
+				float panel_xPos = defaultX + (j * panelOneSize);
+				float panel_yPos = defaultY + (i * panelOneSize) * -1;
 
 				if (panelArray[i, j] >= 1)
 				{
