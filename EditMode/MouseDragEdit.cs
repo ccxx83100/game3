@@ -62,7 +62,6 @@ public class MouseDragEdit : MonoBehaviour
 			clickCount = 0;
 		}
 
-
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		int _row = 0;
 		int _col = 0;
@@ -82,15 +81,15 @@ public class MouseDragEdit : MonoBehaviour
 			}
 		}
 		GameObject _go = GameObject.Find("Po_R" + _row + "C" + _col);
-		// 1:Panel  2:Grid  3:Help  4:Cross
+		// 1:Panel  2:Grid  3:Cross  4:Help
 		if (EMM.panelArray[_row, _col] == 1 || EMM.panelArray[_row, _col] == 2)
 		{
-			EMM.panelArray[_row, _col] = 3;
+			EMM.panelArray[_row, _col] = 4;
 			_go.GetComponent<SpriteRenderer>().color = new Color(200.0f / 255.0f, 0.0f / 255.0f, 0.0f / 255.0f, 255.0f / 255.0f);
 		}
-		else if (EMM.panelArray[_row, _col] == 3)
+		else if (EMM.panelArray[_row, _col] == 4)
 		{
-			EMM.panelArray[_row, _col] = 4;
+			EMM.panelArray[_row, _col] = 3;
 			GameObject __go = GameObject.Find("Po_R" + _row + "C" + _col);
 			Destroy(__go);
 
@@ -102,7 +101,7 @@ public class MouseDragEdit : MonoBehaviour
 			Po.transform.localScale = new Vector2(EMM.panelScaleMin, EMM.panelScaleMin);
 			dal.Array2DLog(EMM.panelArray);
 		}
-		else if (EMM.panelArray[_row, _col] == 4)
+		else if (EMM.panelArray[_row, _col] == 3)
 		{
 			EMM.panelArray[_row, _col] = 2;
 			GameObject __go = GameObject.Find("Co_R" + _row + "C" + _col);
