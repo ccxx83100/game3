@@ -6,7 +6,7 @@ using TMPro;
 
 public class MainScript : MonoBehaviour
 {
-	public GameObject PanelPrefab, BallPrefab, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
+	public GameObject PanelPrefab, BallPrefab, BallPrefab2, BallPrefab3, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
 	public float panelOneSize, panelScale;
 	public float defaultX, defaultY, panelScaleMin, cameraSize, panelSize;
 	public float[,,] panelVecter2XY;
@@ -179,14 +179,15 @@ public class MainScript : MonoBehaviour
 		Vector3 ballPos = new Vector3(0, 0, 0);
 		ballPos.x = defaultX + panelOneSize * nowPosition[1];
 		ballPos.y = defaultY - panelOneSize * nowPosition[0];
-		Bo = Instantiate(BallPrefab, ballPos, Quaternion.identity) as GameObject;
+		Bo = Instantiate(BallPrefab3, ballPos, Quaternion.identity) as GameObject;
 		float _ranX = Random.Range(0.0f, 360.0f);
 		float _ranY = Random.Range(0.0f, 360.0f);
 		float _ranZ = Random.Range(0.0f, 360.0f);
 		Quaternion rotQ = Quaternion.Euler(_ranX, _ranY, _ranZ);
 		Bo.transform.rotation = rotQ;
 		Bo.name = "Ball";
-		float ballScale = cameraSize * 2 * panelScale;
+		float _prefabScale = 0.176f;         //BallPrefab=1  BallPrefab2=0.19f	 BallPrefab2=0.176f
+		float ballScale = cameraSize * 2 * panelScale * _prefabScale;
 		Bo.transform.localScale = new Vector3(ballScale, ballScale, ballScale);
 
 		maxDeleteCount = breakCount;
