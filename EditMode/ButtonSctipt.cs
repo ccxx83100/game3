@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ButtonSctipt : MonoBehaviour
 {
@@ -10,8 +11,14 @@ public class ButtonSctipt : MonoBehaviour
 		em.EnterAndClick();
 	}
 
-	public void ConsoleSclole()
+	public void OnClickOutput()
 	{
+		EditModeMain em = GameObject.Find("EditModeMain").GetComponent<EditModeMain>();
+		em.OutputScript();
+	}
 
+	public void OnClickGameMain()
+	{
+		SceneManager.LoadScene("Scene_GameMain");
 	}
 }
