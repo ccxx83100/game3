@@ -8,13 +8,15 @@ public class TitleScene : MonoBehaviour
 {
 	//タイトル自動切り替え時間
 	public float changeTime;
-	void Start()
+	public void Start()
 	{
 		//Invoke("ChangeScene", changeTime);
 
+		Debug.Log("aaaaaaaaaaaaaaaa");
+
 		RectTransform _tf = GameObject.Find("Canvas").GetComponent<RectTransform>();
 		var canvasSize = _tf.sizeDelta;
-		float _verX = canvasSize.x / 2 - 50f;
+		float _verX = canvasSize.x / 2 - 80.0f;
 		float _varY = canvasSize.y / 2 * -1.0f + 110.0f;
 
 		GameObject VersionObj = GameObject.Find("Version");

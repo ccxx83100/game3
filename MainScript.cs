@@ -6,7 +6,8 @@ using TMPro;
 
 public class MainScript : MonoBehaviour
 {
-	public GameObject PanelPrefab, BallPrefab, BallPrefab2, BallPrefab3, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
+	public GameObject PanelPrefab, BreakEffectPrefab, PanelBreakPrefab;      //プレハブ設定用のGameObject
+	public GameObject BallPrefab, BallPrefab2, BallPrefab3;
 	public float panelOneSize, panelScale;
 	public float defaultX, defaultY, panelScaleMin, cameraSize, panelSize;
 	public float[,,] panelVecter2XY;
@@ -15,9 +16,9 @@ public class MainScript : MonoBehaviour
 	private int[] nowPosition;
 	private int breakCount;
 	[SerializeField] public int Serialize_StageNo;
-	private int onePanelPoint = 30;
-	public int resetCost = 30;
-	public int hintCost = 200;
+	private int onePanelPoint = 10;                         //パネル1個のスコア
+	public int resetCost = 30;                              //リセット時のコスト
+	public int hintCost = 200;                              //ヒント時のコスト
 	public int[] loadCsvArray;
 	public bool startFlg, endFlg;                           //スタート　エンドフラグ
 	public bool escapeFlg = true;                           //ステージセレクトバグ回避フラグ
@@ -107,8 +108,13 @@ public class MainScript : MonoBehaviour
 		cameraSize = Camera.main.orthographicSize;
 		CustumLib.ScreenData();
 
-		//ステージリストから値を取得		
+		//ステージリストから値を取得
 		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(stgNo);
+		if (stl.switchStage + 1 == stgNo)
+		{
+			CsvAccessEditMode csvAEM = new CsvAccessEditMode();
+			(_startPos, _stageArray, _hintArray, _breakCount) = csvAEM.CsvLoad();
+		}
 
 		//現在地配列 [] [,]
 		nowPosition = _startPos;
@@ -222,6 +228,11 @@ public class MainScript : MonoBehaviour
 		}
 		//変数初期化
 		var (_startPos, _stageArray, _hintArray, _breakCount) = stl.StageSetUP(Serialize_StageNo);
+		if (stl.switchStage + 1 == Serialize_StageNo)
+		{
+			CsvAccessEditMode csvAEM = new CsvAccessEditMode();
+			(_startPos, _stageArray, _hintArray, _breakCount) = csvAEM.CsvLoad();
+		}
 
 		//パネル初期化
 		nowPosition = _startPos;
@@ -688,10 +699,6 @@ public class MainScript : MonoBehaviour
 		IndexerTest_old ITO = new IndexerTest_old();
 		ITO.SetProperty(100);
 
-		TryCatch TC = new TryCatch();
-		//TC.TryC();
-
-
 	}
 }
 
@@ -749,31 +756,7 @@ public class IndexerTest_old
 
 }
 
-///-------------------------------------------------------------------------------
-/// <summary>
-/// try catch
-/// </summary>
-///-------------------------------------------------------------------------------
 
-public class TryCatch
-{
-
-	int waru = 1;
-	public void TryC()
-	{
-		Debug.Log("tryc");
-
-		try
-		{
-			int _a = 3 / waru;
-			Debug.Log(_a);
-		}
-		catch
-		{
-			Debug.Log("hogehoge");
-		}
-	}
-}
 
 
 

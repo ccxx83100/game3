@@ -20,6 +20,9 @@ public class StageSelect : MonoBehaviour
 			stageList.Add("Stage " + i);
 		}
 
+		//追記
+		stageList.Add("EditStage");
+
 		Dropdown dropDown = GetComponent<Dropdown>();
 		dropDown.ClearOptions();
 
@@ -56,6 +59,14 @@ public class StageSelect : MonoBehaviour
 			int _msStageNo = value + 1;
 			//Debug.Log($"[StageSelect]StageNO--->{_msStageNo}");
 			_ms.Serialize_StageNo = _msStageNo;
+
+			StageList stl = new StageList();
+			int editStageNo = stl.switchStage;
+			if (value == editStageNo)
+			{
+				Debug.Log("EditStage");
+			}
+
 
 			GameObject[] ptcObjects;
 			ptcObjects = GameObject.FindGameObjectsWithTag("ParticleObject");

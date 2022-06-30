@@ -3,8 +3,6 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using System.IO;
-using System.Linq;
 
 public class EditModeMain : MonoBehaviour
 {
@@ -24,6 +22,10 @@ public class EditModeMain : MonoBehaviour
 		inputF_row = GameObject.Find("InputField(rowY0)").GetComponent<TMP_InputField>();
 		inputF_console = GameObject.Find("InputField(console)").GetComponent<TMP_InputField>();
 		inputF_col.Select();
+
+		AddTextConsole("--- EditMode ---");
+		Image img = GameObject.Find("OutputButton").GetComponent<Image>();
+		img.color = new Color(100.0f / 255.0f, 100.0f / 255.0f, 100.0f / 255.0f, 255.0f / 255.0f);
 	}
 
 	///-------------------------------------------------------------------------------
@@ -89,7 +91,6 @@ public class EditModeMain : MonoBehaviour
 	public float[,,] panelVecter2XY;
 	public float panelSize;
 
-	GameObject[] ballObjects;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -98,8 +99,6 @@ public class EditModeMain : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	private void GenGlid(int _col, int _row)
 	{
-
-		//----------------
 		GameObject[] pnlObjects;
 		pnlObjects = GameObject.FindGameObjectsWithTag("PanelObject");
 		foreach (GameObject i in pnlObjects)
@@ -151,6 +150,10 @@ public class EditModeMain : MonoBehaviour
 			}
 		}
 		PanelSetUP_Fnc();
+
+		Image img = GameObject.Find("OutputButton").GetComponent<Image>();
+		img.color = new Color(100.0f / 255.0f, 100.0f / 255.0f, 100.0f / 255.0f, 255.0f / 255.0f);
+
 	}
 
 
@@ -263,7 +266,7 @@ public class EditModeMain : MonoBehaviour
 	private int[,] output_stageArray;
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	///
+	/// マウスドラッグの処理
 	/// </summary>
 	///-------------------------------------------------------------------------------
 	public void MouseDrag_method()
@@ -284,6 +287,9 @@ public class EditModeMain : MonoBehaviour
 						//スタート場所にインスタンスを生成
 						if (startFlg == false)
 						{
+							Image img = GameObject.Find("OutputButton").GetComponent<Image>();
+							img.color = new Color(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
+
 							GameObject __go = GameObject.Find("Go_R" + _row + "C" + _col);
 
 							float panel_xPos = __go.transform.position.x;
