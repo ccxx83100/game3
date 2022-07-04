@@ -162,7 +162,7 @@ public class DebugArrayLog
 ///dal.List1DLog(*****リスト****);
 /// </summary>
 ///-------------------------------------------------------------------------------
-public class DebugListLog2
+public class DebugListLog
 {
 	///-------------------------------------------------------------------------------
 	/// <summary>
