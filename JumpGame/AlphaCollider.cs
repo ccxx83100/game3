@@ -25,7 +25,7 @@ public class AlphaCollider : MonoBehaviour
 		string destroyName = destroyPanel.name;
 		//Debug.Log("destroyPanel:" + destroyPanel);
 		int sarch = JGM.destroyList.IndexOf(destroyName);
-		if (sarch >= 0)
+		if (sarch >= 0 && destroyName != "Grid")
 		{
 			//			Destroy(destroyPanel);
 			//			JGM.destroyList.Remove(destroyName);

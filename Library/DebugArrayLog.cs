@@ -197,7 +197,7 @@ public class DebugListLog
 				}
 			}
 		}
-		Debug.Log(arrayPrint);
+		Debug.Log($"<color=yellow>{arrayPrint}</color>");
 	}
 
 	///-------------------------------------------------------------------------------

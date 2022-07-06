@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
+using UnityEngine.UI;
 
 ///-------------------------------------------------------------------------------
 /// <summary>
@@ -11,24 +12,29 @@ using System.Linq;
 ///-------------------------------------------------------------------------------
 public class JumpGameMain : MonoBehaviour
 {
-
 	public GameObject PanelPrefab, EffectPrefab, NumberPrefab;
-	private const float panelSizeX = 1.12f;                 //パネルの横サイズ
+	public GameObject AlphaCollider, SecondAlphaCollider, BallObject;
+	private const float panelSizeX = 1.00f;                 //パネルの横サイズ
 	private const float panelSizeY = 0.15f;                 //パネルの縦サイズ
-	private const float panelZeroPosY = -2.7f;              //パネルの初期Y位置
+	private const float panelZeroPosY = -0.7f;              //パネルの初期Y位置
 	private const float cameraSlideX = 4.0f;
-	private const float alphaColliderSideX = -5.2f;
+	private const float alphaColliderSideX = -4.65f;
 	private const float secondAlphaColliderSideX = -15.0f;
 	public Rigidbody rbBall;
-	public GameObject BallObject;
-	public Camera mainCamera;
-	public Vector3 cameraPos;
+	public Camera mainCamera, subCamera;
+	public Vector3 cameraPos, subCameraPos;
 	DebugArrayLog dal = new DebugArrayLog();
 	public bool ballJumpFlg;
 	public List<string> destroyList = new List<string>();
 	private int[] mapArray;
-	private float velocityJumpY = 8.0f;
+	private float velocityJumpY = 10.0f;
 	private int panelCount = 0;
+	private const int generateNum = 100;
+	private GameObject Circle;
+	private Image fill;
+	private List<int> mapList;
+	private int checkPoint = 100;
+	private float startXPos = 0, startYpos = 2;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -39,39 +45,53 @@ public class JumpGameMain : MonoBehaviour
 	public float nowMeter, startMeter, moveMeter;
 	void Start()
 	{
-		mapArray = csvDataSet.CsvMapLoad();                 //データ読み込み
-		Physics.gravity = new Vector3(0, -20, 0);           //世界の重力
-		PanelGenerate(0, 300);
+		mapList = new List<int>() { 0, 100, 200, 300, 400, 500, 600, 700, 800, 900 };
+
+		mapArray = csvDataSet.CsvMapLoad();                             //データ読み込み
+		Physics.gravity = new Vector3(0, -20, 0);                       //世界の重力
+
 		BallObject = GameObject.Find("Ball");
 		rbBall = BallObject.GetComponent<Rigidbody>();
 		AlphaCollider = GameObject.Find("AlphaCollider");
 		AlphaCollider.GetComponent<MeshRenderer>().material.color = new Color(255, 255, 255, 0);
 		SecondAlphaCollider = GameObject.Find("SecondAlphaCollider");
+		SecondAlphaCollider.GetComponent<MeshRenderer>().material.color = new Color(255, 255, 255, 0);
+		startMeter = BallObject.transform.position.x;
+		Circle = GameObject.Find("Circle01");
+		fill = Circle.GetComponent<Image>();
 
-		startMeter = GameObject.Find("Ball").transform.position.x;
+		Vector3 ballStartPostion = new Vector3(startXPos, startYpos, 0);
+		BallObject.transform.position = ballStartPostion;
+		PanelGenerate(0);
 
-		//.anchoredPosition
-		//-393 -303 -213
-		/*
-				Transform parent = GameObject.Find("ScoreSet").transform;
-				GameObject numIns = Instantiate(NumberPrefab, new Vector3(0, 0, 0), Quaternion.identity, parent);
-				RectTransform rectNumIns = numIns.GetComponent<RectTransform>();
-				rectNumIns.anchoredPosition = new Vector3(-213f, 715f, 0);
-				NumberImage NI = numIns.GetComponent<NumberImage>();
-				NI.SetSprite('1');
-				*/
-		GameObject destNum = GameObject.Find("NumberPlus");
-		Destroy(destNum);
 
+		//スコア周りの初期処理
+		Destroy(GameObject.Find("NumberPlus"));                         //ダミーデータ削除
+		Transform parent = GameObject.Find("ScoreSet").transform;       //親
+		numInst = new GameObject[metorStrLength];
+		float leftXpos = -393.0f;
+		for (int i = 0; i < metorStrLength; i++)
+		{
+			//最大値分のインスタンスを用意 0→10000  1→1000  2→100  3→10  4→1  5→. 6→.0
+			numInst[i] = Instantiate(NumberPrefab, new Vector3(0, 0, 0), Quaternion.identity, parent);
+			RectTransform rectNumIns = numInst[i].GetComponent<RectTransform>();
+			float _x = leftXpos + i * 90;
+			rectNumIns.anchoredPosition = new Vector3(_x, 715f, 0);
+			numInst[i].GetComponent<NumberImage>().SetSprite('n');
+		}
 	}
+
+	private int metorStrLength = 6;     //桁数
+	GameObject[] numInst;
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
-	/// パネルを生成  引数1:最小値 引数2:最大値
+	/// パネルを生成  引数1:最小値
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	private void PanelGenerate(int _min, int _max)
+	private void PanelGenerate(int _min)
 	{
+		int _max = _min + generateNum;
 		GameObject PanelObject;
 		Transform parent;
 		float _xPos, _yPos;
@@ -87,11 +107,15 @@ public class JumpGameMain : MonoBehaviour
 				PanelObject.name = "PanelObj" + panelCount;
 			}
 		}
+
+
 	}
 
+	private float targetVelocity = 5;                   //初期速度
+	private float targetVelocityMin = 5;                //最低速度
+	private float targetVelocityMax = 9;                //最高速度
+	private float power = 20;                           //なんだろう？
 	public Vector3 ballVelocity;
-	GameObject AlphaCollider, SecondAlphaCollider;
-
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// UPDATE
@@ -99,57 +123,72 @@ public class JumpGameMain : MonoBehaviour
 	///-------------------------------------------------------------------------------
 	void Update()
 	{
-		//ballVelocity = rbBall.velocity;     //velocity表示用
+		ballVelocity = rbBall.velocity;     //velocity表示用
 
 		//INPUT操作
 		if (Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0)) Jump();
 
 		//追従
-		cameraPos = new Vector3(BallObject.transform.localPosition.x + cameraSlideX, BallObject.transform.localPosition.y + 3.0f, -20.0f);
+		cameraPos = new Vector3(BallObject.transform.localPosition.x + cameraSlideX, BallObject.transform.localPosition.y + 2.5f, -20.0f);
 		mainCamera.transform.localPosition = cameraPos;
+		subCameraPos = new Vector3(BallObject.transform.localPosition.x + 20, 3, -40.0f);
+		subCamera.transform.localPosition = subCameraPos;
+
 		Vector3 backPos = new Vector3(BallObject.transform.localPosition.x + alphaColliderSideX, BallObject.transform.localPosition.y, 0);
 		AlphaCollider.transform.localPosition = backPos;
-		Vector3 backPosSe = new Vector3(BallObject.transform.localPosition.x + secondAlphaColliderSideX, BallObject.transform.localPosition.y, 0);
+		Vector3 backPosSe = new Vector3(BallObject.transform.localPosition.x + secondAlphaColliderSideX, -42, 0);
 		SecondAlphaCollider.transform.localPosition = backPosSe;
 
-		//移動
-		const float targetVelocity = 8;
-		const float power = 20;
+		//移動	
+		targetVelocity += 0.003f;
+		if (targetVelocity >= targetVelocityMax)
+		{
+			targetVelocity = targetVelocityMax;
+		}
 		if (ballJumpFlg)
 		{
 			rbBall.AddForce(Vector3.right * ((targetVelocity - rbBall.velocity.x) * power), ForceMode.Acceleration);
 		}
 
-		nowMeter = GameObject.Find("Ball").transform.position.x;
+		//速度メーター
+		float per = (targetVelocity / targetVelocityMax);
+		float circleCut = per * 3 / 4;
+		fill.fillAmount = circleCut;
+
+		//移動距離
+		nowMeter = BallObject.transform.position.x;
 		moveMeter = nowMeter - startMeter;
+		meterDisplay(moveMeter);
 
-
-		GameObject[] numObjects;
-		numObjects = GameObject.FindGameObjectsWithTag("Numbers");
-		foreach (GameObject i in numObjects)
+		//パネル生成
+		if (nowMeter >= (checkPoint - 50) && mapList.Contains(checkPoint) == true)
 		{
-			Destroy(i);
+			int maplistIndex = mapList.IndexOf(checkPoint);
+			PanelGenerate(checkPoint);
+			mapList.Remove(checkPoint);
+			checkPoint += 100;
 		}
 
-		float score = moveMeter;
+	}
+
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// メートル表示
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	private void meterDisplay(float _moveMeter)
+	{
+		float score = _moveMeter;
 		string scoreStr = score.ToString("N1");         //スコアを小数点1位で切り上げて文字列に
 		int scoreLen = scoreStr.Length;
-
-		Debug.Log(scoreStr);
+		Transform parent = GameObject.Find("ScoreSet").transform;
 
 		for (int i = 0; i < scoreLen; i++)
 		{
 			char spritChar = scoreStr[i];
-			Transform parent = GameObject.Find("ScoreSet").transform;
-			GameObject numIns = Instantiate(NumberPrefab, new Vector3(0, 0, 0), Quaternion.identity, parent);
-			RectTransform rectNumIns = numIns.GetComponent<RectTransform>();
-			float _x = -393 + i * 90;
-			rectNumIns.anchoredPosition = new Vector3(_x, 715f, 0);
-			NumberImage NI = numIns.GetComponent<NumberImage>();
-			NI.SetSprite(spritChar);
+			numInst[i].GetComponent<NumberImage>().SetSprite(spritChar);
 		}
-
-
 	}
 
 	///-------------------------------------------------------------------------------
@@ -160,11 +199,10 @@ public class JumpGameMain : MonoBehaviour
 	public void DestroyEffect(GameObject breakPanel, string listName)
 	{
 		Vector3 _pos = breakPanel.transform.position;
-		GameObject IO = Instantiate(EffectPrefab, _pos, Quaternion.identity);
+		GameObject EO = Instantiate(EffectPrefab, _pos, Quaternion.identity);
 		Destroy(breakPanel);
 		destroyList.Remove(listName);
-
-		StartCoroutine(DelayDestroy(2.0f, IO));     //コールチン
+		StartCoroutine(DelayDestroy(0.6f, EO));     //コールチン
 	}
 
 	///-------------------------------------------------------------------------------
@@ -178,18 +216,24 @@ public class JumpGameMain : MonoBehaviour
 		Destroy(go);
 	}
 
-
 	///-------------------------------------------------------------------------------
 	/// <summary>
 	/// ジャンプ
 	/// </summary>
 	///-------------------------------------------------------------------------------
+	public int jumpCount = 0;
 	private void Jump()
 	{
-		if (ballJumpFlg)
+		if (ballJumpFlg && jumpCount <= 1)
 		{
-			ballJumpFlg = false;
+			jumpCount++;
+			//ballJumpFlg = false;
 			rbBall.velocity = new Vector3(rbBall.velocity.x, velocityJumpY, 0);
+			targetVelocity -= 0.8f;
+			if (targetVelocity <= targetVelocityMin)
+			{
+				targetVelocity = targetVelocityMin;
+			}
 			//rbBall.AddForce(Vector3.up * (velocityJumpY * 100), ForceMode.Impulse);
 		}
 	}
@@ -206,8 +250,6 @@ public class JumpGameMain : MonoBehaviour
 		value *= 10;
 		return value;
 	}
-
-
 }
 
 

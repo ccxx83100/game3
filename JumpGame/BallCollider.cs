@@ -20,11 +20,14 @@ public class BallCollider : MonoBehaviour
 	void OnCollisionEnter(Collision collision)
 	{
 		JGM.ballJumpFlg = true;
+		JGM.jumpCount = 0;
 		GameObject destroyPanel = collision.gameObject;
 
 		if (!JGM.destroyList.Contains(destroyPanel.name))
 		{
 			JGM.destroyList.Add(destroyPanel.name);
 		}
+
+		//dll.List1DLog(JGM.destroyList);
 	}
 }

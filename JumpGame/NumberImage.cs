@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class NumberImage : MonoBehaviour
 {
-	public Sprite Number0, Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8, Number9, Minus, Dot;
+	public Sprite Number0, Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8, Number9, Minus, Dot, NoN;
 
 	public void SetSprite(char num)
 	{
@@ -22,7 +22,8 @@ public class NumberImage : MonoBehaviour
 			{'8', Number8},
 			{'9', Number9},
 			{'-', Minus},
-			{'.', Dot}
+			{'.', Dot},
+			{'n', NoN}
 		};
 
 		SpriteRenderer img = GetComponent<SpriteRenderer>();

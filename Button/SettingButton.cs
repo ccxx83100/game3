@@ -68,4 +68,15 @@ public class SettingButton : MonoBehaviour
 	{
 		SceneManager.LoadScene("Scene_EditMode");
 	}
+
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// (仮) ジャンプゲーム
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	public void OnClickJumpGame()
+	{
+		SceneManager.LoadScene("Scene_JumpMain");
+	}
 }

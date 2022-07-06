@@ -22,6 +22,9 @@ public class SecondAlphaCollider : MonoBehaviour
 	void OnCollisionEnter(Collision collision)
 	{
 		GameObject destroyPanel = collision.gameObject;
-		Destroy(destroyPanel);
+		if (destroyPanel.name != "Grid")
+		{
+			Destroy(destroyPanel);
+		}
 	}
 }
