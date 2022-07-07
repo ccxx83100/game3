@@ -19,13 +19,17 @@ public class BallCollider : MonoBehaviour
 	//当たり判定
 	void OnCollisionEnter(Collision collision)
 	{
-		JGM.ballJumpFlg = true;
-		JGM.jumpCount = 0;
 		GameObject destroyPanel = collision.gameObject;
-
-		if (!JGM.destroyList.Contains(destroyPanel.name))
+		if (destroyPanel.name != "AlphaCollider")
 		{
-			JGM.destroyList.Add(destroyPanel.name);
+			JGM.ballJumpFlg = true;
+			JGM.jumpCount = 0;
+			Debug.Log(destroyPanel.name);
+
+			if (!JGM.destroyList.Contains(destroyPanel.name))
+			{
+				JGM.destroyList.Add(destroyPanel.name);
+			}
 		}
 
 		//dll.List1DLog(JGM.destroyList);

@@ -28,8 +28,19 @@ public class MainScript : MonoBehaviour
 	StageList stl = new StageList();                        //ステージリストのインスタンス
 	public int bestScore, nowScore, nowScoreView, totalScore;
 	public float ballMove = 0.15f;                          //ボールの移動速度
-	public const float ballRotation = 11.0f;                //ボールの回転速度
+	public const float ballRotation = 19.0f;                //ボールの回転速度
 	public float ballMoveTime;                              //ボール速度がバグるのでTime.deltaTimeを仮実装
+
+
+	///-------------------------------------------------------------------------------
+	/// <summary>
+	/// 処理落ちするのでFPS調整
+	/// </summary>
+	///-------------------------------------------------------------------------------
+	void Awake()
+	{
+		Application.targetFrameRate = 60;
+	}
 
 	///-------------------------------------------------------------------------------
 	/// <summary>
@@ -67,7 +78,7 @@ public class MainScript : MonoBehaviour
 	{
 		if (Bo)
 		{
-			BoMove_Fnc();
+			BallMove();
 			ScoreUP_Fnc();
 		}
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
@@ -127,11 +138,13 @@ public class MainScript : MonoBehaviour
 
 		if (panelNumX >= panelNumY)
 		{
-			panelScale = 0.50f / 1.125f / (panelNumX - 2);
+			//panelScale = 0.50f / 1.125f / (panelNumX - 2);
+			panelScale = 0.50f / 1.3f / (panelNumX - 2);
 		}
 		else
 		{
-			panelScale = 0.50f / 1.125f / (panelNumY - 2);
+			//panelScale = 0.50f / 1.125f / (panelNumY - 2);
+			panelScale = 0.50f / 1.3f / (panelNumY - 2);
 		}
 
 		panelScaleMin = panelScale * 1.0f;              //マージン分を縮小する
@@ -475,7 +488,7 @@ public class MainScript : MonoBehaviour
 	/// [!スコア更新] [重要]ボールオブジェクトの移動・停止・回転・移動した場所の削除
 	/// </summary>
 	///-------------------------------------------------------------------------------
-	private void BoMove_Fnc()
+	private void BallMove()
 	{
 		string md_mouseLRUD = MouseDrag.mouseLRUD;
 		Vector3 _pos = Bo.transform.position;
@@ -484,10 +497,10 @@ public class MainScript : MonoBehaviour
 
 		if (goArray != null)
 		{
-			float limitMoveX_Half_Right = panelVecter2XY[nowPosition[0], nowPosition[1], 0] + (panelOneSize / 10);
-			float limitMoveX_Half_Left = panelVecter2XY[nowPosition[0], nowPosition[1], 0] - (panelOneSize / 10);
-			float limitMoveY_Half_Up = panelVecter2XY[nowPosition[0], nowPosition[1], 1] + (panelOneSize / 10);
-			float limitMoveY_Half_Down = panelVecter2XY[nowPosition[0], nowPosition[1], 1] - (panelOneSize / 10);
+			float limitMoveX_Half_Right = panelVecter2XY[nowPosition[0], nowPosition[1], 0] + (panelOneSize / 100); //(panelOneSize / 10)
+			float limitMoveX_Half_Left = panelVecter2XY[nowPosition[0], nowPosition[1], 0] - (panelOneSize / 100);
+			float limitMoveY_Half_Up = panelVecter2XY[nowPosition[0], nowPosition[1], 1] + (panelOneSize / 100);
+			float limitMoveY_Half_Down = panelVecter2XY[nowPosition[0], nowPosition[1], 1] - (panelOneSize / 100);
 			string _daleteName = "Po_R" + nowPosition[0] + "C" + nowPosition[1];
 
 			switch (md_mouseLRUD)

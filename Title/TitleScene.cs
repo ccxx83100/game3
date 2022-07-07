@@ -12,8 +12,6 @@ public class TitleScene : MonoBehaviour
 	{
 		//Invoke("ChangeScene", changeTime);
 
-		Debug.Log("aaaaaaaaaaaaaaaa");
-
 		RectTransform _tf = GameObject.Find("Canvas").GetComponent<RectTransform>();
 		var canvasSize = _tf.sizeDelta;
 		float _verX = canvasSize.x / 2 - 80.0f;
