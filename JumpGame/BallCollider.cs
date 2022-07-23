@@ -24,14 +24,15 @@ public class BallCollider : MonoBehaviour
 		{
 			JGM.ballJumpFlg = true;
 			JGM.jumpCount = 0;
-			Debug.Log(destroyPanel.name);
-
 			if (!JGM.destroyList.Contains(destroyPanel.name))
 			{
 				JGM.destroyList.Add(destroyPanel.name);
 			}
 		}
-
+		else
+		{
+			Debug.Log("alphaC");
+		}
 		//dll.List1DLog(JGM.destroyList);
 	}
 }
